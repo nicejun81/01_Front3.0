@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base Reset ── */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply font-sans bg-surface text-ink antialiased;
+    min-height: 100vh;
+  }
+}
+
+/* ── Reusable Component Patterns ── */
+@layer components {
+  /* Horizontal scroll container */
+  .scroll-row {
+    @apply flex gap-3 overflow-x-auto pb-1;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Icon button (header actions, etc.) */
+  .icon-btn {
+    @apply w-9 h-9 flex items-center justify-center rounded-full
+           hover:bg-ink/5 transition-colors;
+  }
+
+  /* Badge pill */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5
+           text-caption font-semibold rounded-pill;
+  }
+
+  /* Section spacing */
+  .section {
+    @apply mb-section;
+  }
+}
+
+/* ── Utility Overrides ── */
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ── Animations ── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-sheet-up {
+  animation: sheetUp 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-overlay-fade {
+  animation: overlayFade 240ms ease-out;
+}
+
+/* ── Custom Scrollbar (main viewport) ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a3a3a3;
+}
