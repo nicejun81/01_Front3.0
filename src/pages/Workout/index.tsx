@@ -71,16 +71,6 @@ type BodyCheck = {
   inbody: InBody | null
 }
 
-const PAIN_AREAS = [
-  { key: '없음', label: '없음', icon: '✅' },
-  { key: '어깨', label: '어깨', icon: '🦴' },
-  { key: '허리', label: '허리', icon: '🔙' },
-  { key: '무릎', label: '무릎', icon: '🦵' },
-  { key: '손목', label: '손목', icon: '✋' },
-  { key: '목', label: '목', icon: '🧣' },
-  { key: '발목', label: '발목', icon: '🦶' },
-  { key: '팔꿈치', label: '팔꿈치', icon: '💪' },
-] as const
 const GOALS = [
   { key: 'muscle', label: '근력 향상', desc: '근비대 · 근력 증가', imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop' },
   { key: 'diet', label: '다이어트', desc: '체지방 감소 · 유산소', imageUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=300&fit=crop' },
@@ -422,7 +412,7 @@ export const WorkoutPage = () => {
               <InField label="내장지방 레벨" value={inbody.visceralFat} onChange={v => setInbody(p => ({ ...p, visceralFat: v }))} unit="lv" placeholder="8" />
               {inbody.visceralFat && (
                 <div className="mt-2">
-                  <BarGauge value={Number(inbody.visceralFat)} min={0} low={10} high={15} max={20} unit="lv" labels={['정상 (1-9)', '주의 (10-14)', '위험 (15+)']} />
+                  <BarGauge value={Number(inbody.visceralFat)} min={0} low={10} high={15} max={20} labels={['정상 (1-9)', '주의 (10-14)', '위험 (15+)']} />
                 </div>
               )}
             </div>
@@ -466,7 +456,7 @@ export const WorkoutPage = () => {
                       <span className="text-caption text-white/60">골격근량</span>
                       <span className="text-body font-bold tabular-nums">{inbody.muscleMass} <span className="text-caption text-white/50">kg</span></span>
                     </div>
-                    <BarGauge value={Number(inbody.muscleMass)} min={15} low={24} high={35} max={45} unit="kg" labels={['부족', '표준', '우수']} />
+                    <BarGauge value={Number(inbody.muscleMass)} min={15} low={24} high={35} max={45} labels={['부족', '표준', '우수']} />
                   </div>
                 )}
 
@@ -477,7 +467,7 @@ export const WorkoutPage = () => {
                       <span className="text-caption text-white/60">체지방률</span>
                       <span className="text-body font-bold tabular-nums">{inbody.bodyFat} <span className="text-caption text-white/50">%</span></span>
                     </div>
-                    <BarGauge value={Number(inbody.bodyFat)} min={5} low={10} high={25} max={40} unit="%" labels={['부족', '표준', '과다']} />
+                    <BarGauge value={Number(inbody.bodyFat)} min={5} low={10} high={25} max={40} labels={['부족', '표준', '과다']} />
                   </div>
                 )}
 
@@ -653,7 +643,7 @@ export const WorkoutPage = () => {
       {/* 탭: AI 맞춤운동 / 커스텀 운동 */}
       <div className="flex bg-surface-muted rounded-card p-1 mb-5">
         <button
-          onClick={() => { setWorkoutTab('ai'); setSaved([]); localStorage.setItem(SAVED_KEY, '[]'); setShowAddExercise(false) }}
+          onClick={() => { setWorkoutTab('ai'); setSaved([]); localStorage.setItem(SAVED_KEY, '[]') }}
           className={`flex-1 py-2.5 text-label font-semibold rounded-card transition-all ${
             workoutTab === 'ai' ? 'bg-surface text-ink shadow-card' : 'text-ink-placeholder'
           }`}
@@ -661,7 +651,7 @@ export const WorkoutPage = () => {
           AI 맞춤운동
         </button>
         <button
-          onClick={() => { setWorkoutTab('custom'); setSaved([]); localStorage.setItem(SAVED_KEY, '[]'); setShowAddExercise(false) }}
+          onClick={() => { setWorkoutTab('custom'); setSaved([]); localStorage.setItem(SAVED_KEY, '[]') }}
           className={`flex-1 py-2.5 text-label font-semibold rounded-card transition-all relative ${
             workoutTab === 'custom' ? 'bg-surface text-ink shadow-card' : 'text-ink-placeholder'
           }`}
