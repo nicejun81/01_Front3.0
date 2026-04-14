@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { PageLayout, SubPageHeader, FilterTabs } from '../../components'
 import { IconSearch, IconHeart, IconMessage, IconCalendar, IconMapPin, IconShare } from '../../components/Icons'
 
@@ -250,7 +250,11 @@ const meetups = [
 
 export const ActivityPage = () => {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'feed' | 'meetup'>('feed')
+  const location = useLocation()
+  const activeTab = location.hash === '#meetup' ? 'meetup' : 'feed'
+  const setActiveTab = (tab: 'feed' | 'meetup') => {
+    navigate(tab === 'meetup' ? '#meetup' : '#feed', { replace: true })
+  }
   const [selectedCategory, setSelectedCategory] = useState('전체')
   const [menuFeedId, setMenuFeedId] = useState<number | null>(null)
   const [blockTarget, setBlockTarget] = useState<string | null>(null)

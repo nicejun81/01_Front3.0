@@ -34,26 +34,38 @@ const profilePosts = [
 /* ── 마이 탭 데이터 ── */
 /* walletStats → 각 페이지로 이동 (/wallet/cash, /wallet/point, /wallet/coupon) */
 
+const MEMBERSHIP_TABS = ['이용중', '미사용', '사용완료'] as const
+
 const memberships = [
   {
-    id: 1, status: 'active', statusLabel: '이용중',
+    id: 1, status: 'active', statusLabel: '이용중', tab: '이용중' as const,
     name: '3개월 멤버십', gym: '바디채널 강남점',
     info: [{ label: '잔여일', value: '67일' }, { label: '유효기간', value: '2025.03.15' }],
   },
   {
-    id: 2, status: 'expiring', statusLabel: '만료임박',
+    id: 2, status: 'expiring', statusLabel: '만료임박', tab: '이용중' as const,
     name: 'PT 20회 패키지', gym: '바디채널 강남점',
     info: [{ label: '잔여횟수', value: '3회' }, { label: '유효기간', value: '2025.01.20' }],
   },
   {
-    id: 3, status: 'paused', statusLabel: '일시정지',
+    id: 3, status: 'paused', statusLabel: '일시정지', tab: '미사용' as const,
     name: 'GX 무제한 회원권', gym: '바디채널 강남점',
     info: [{ label: '정지기간', value: '14일' }, { label: '재개일', value: '2025.01.20' }],
   },
   {
-    id: 4, status: 'expired', statusLabel: '만료됨',
+    id: 5, status: 'active', statusLabel: '미사용', tab: '미사용' as const,
+    name: '바레톤 10회 패키지', gym: '바디채널 강남점',
+    info: [{ label: '잔여횟수', value: '10회' }, { label: '유효기간', value: '2025.06.30' }],
+  },
+  {
+    id: 4, status: 'expired', statusLabel: '만료됨', tab: '사용완료' as const,
     name: '1개월 멤버십', gym: '바디채널 강남점',
     info: [{ label: '만료일', value: '2024.12.01' }],
+  },
+  {
+    id: 6, status: 'expired', statusLabel: '사용완료', tab: '사용완료' as const,
+    name: 'PT 10회 패키지', gym: '바디채널 강남점',
+    info: [{ label: '완료일', value: '2024.11.15' }],
   },
 ]
 
@@ -119,6 +131,7 @@ export const MyPage = () => {
   const [showPurchase, setShowPurchase] = useState(searchParams.get('tab') === 'purchase')
   const [activeTab, setActiveTab] = useState<'profile' | 'my'>(searchParams.get('tab') === 'profile' ? 'profile' : 'my')
   const [profileGrid, setProfileGrid] = useState<'grid' | 'tagged'>('grid')
+  const [membershipTab, setMembershipTab] = useState<typeof MEMBERSHIP_TABS[number]>('이용중')
   const switchTab = (tab: 'profile' | 'my') => {
     setActiveTab(tab)
     setSearchParams(tab === 'my' ? {} : { tab }, { replace: true })
@@ -491,8 +504,30 @@ export const MyPage = () => {
           {/* 내 회원권 */}
           <div className="py-section">
             <h3 className="text-body font-bold text-ink mb-3">내 회원권</h3>
+
+            {/* 탭 필터 */}
+            <div className="flex bg-surface-muted rounded-card p-1 mb-4">
+              {MEMBERSHIP_TABS.map((tab) => {
+                const count = memberships.filter(m => m.tab === tab).length
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setMembershipTab(tab)}
+                    className={`flex-1 py-2 text-label font-semibold rounded-card transition-all ${
+                      membershipTab === tab
+                        ? 'bg-surface text-ink shadow-card'
+                        : 'text-ink-placeholder'
+                    }`}
+                  >
+                    {tab} <span className={`ml-0.5 ${membershipTab === tab ? 'text-primary' : ''}`}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* 회원권 리스트 */}
             <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar">
-              {memberships.map((membership) => (
+              {memberships.filter(m => m.tab === membershipTab).map((membership) => (
                 <div
                   key={membership.id}
                   className={`min-w-[240px] flex-shrink-0 rounded-card p-card-lg cursor-pointer transition-transform hover:-translate-y-0.5 ${statusStyles[membership.status]}`}
@@ -518,6 +553,11 @@ export const MyPage = () => {
                   </div>
                 </div>
               ))}
+              {memberships.filter(m => m.tab === membershipTab).length === 0 && (
+                <div className="py-8 text-center text-label text-ink-placeholder">
+                  해당하는 회원권이 없습니다
+                </div>
+              )}
             </div>
           </div>
 

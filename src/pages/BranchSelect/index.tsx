@@ -113,7 +113,7 @@ export const BranchSelectPage = () => {
   return (
     <PageLayout header={header} hideBottomNav noPadding={viewMode === 'map'}>
       {viewMode === 'list' ? (
-        <div className="flex flex-col px-page py-4">
+        <div className="flex flex-col">
           {branches.map(branch => {
             const gym = gymsData[branch.id]
             if (!gym) return null
