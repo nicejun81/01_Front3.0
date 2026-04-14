@@ -166,6 +166,112 @@ const feeds = [
       },
     },
   },
+  {
+    id: 5,
+    imageUrls: [
+      'https://images.unsplash.com/photo-1461897104016-0b3b00b1ea56?w=800&h=800&fit=crop',
+      'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&h=800&fit=crop',
+    ],
+    authorImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    authorName: '러닝매니아',
+    location: '여의도 한강공원',
+    text: '오늘 한강 러닝 10km 완주! 🏃‍♀️ 날씨도 좋고 페이스도 잘 나왔어요. 러닝 크루 분들 덕분에 끝까지 달릴 수 있었습니다!',
+    likeCount: 184,
+    commentCount: 32,
+    isLiked: false,
+    timeAgo: '1시간 전',
+    running: {
+      distance: 10.2,
+      duration: '52:34',
+      avgPace: '5\'09"',
+      splits: [
+        { km: 1, pace: '5\'22"' },
+        { km: 2, pace: '5\'18"' },
+        { km: 3, pace: '5\'12"' },
+        { km: 4, pace: '5\'08"' },
+        { km: 5, pace: '5\'05"' },
+        { km: 6, pace: '5\'02"' },
+        { km: 7, pace: '5\'10"' },
+        { km: 8, pace: '5\'06"' },
+        { km: 9, pace: '4\'58"' },
+        { km: 10, pace: '4\'53"' },
+      ],
+      wearable: {
+        device: 'Garmin Forerunner',
+        activeKcal: 520,
+        avgHr: 156,
+        maxHr: 178,
+        zoneMinutes: { warmup: 5, fatBurn: 12, cardio: 28, peak: 8 },
+      },
+    },
+  },
+  {
+    id: 6,
+    imageUrls: ['https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=800&fit=crop'],
+    authorImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    authorName: '크로스핏러',
+    location: '남산 둘레길',
+    text: '남산 트레일 러닝 도전 🏔️ 경사가 좀 있지만 풍경이 최고였어요. 다음엔 북악산도 가볼 예정!',
+    likeCount: 95,
+    commentCount: 16,
+    isLiked: true,
+    timeAgo: '3시간 전',
+    running: {
+      distance: 6.8,
+      duration: '42:18',
+      avgPace: '6\'13"',
+      splits: [
+        { km: 1, pace: '5\'45"' },
+        { km: 2, pace: '6\'20"' },
+        { km: 3, pace: '6\'38"' },
+        { km: 4, pace: '6\'42"' },
+        { km: 5, pace: '6\'15"' },
+        { km: 6, pace: '5\'58"' },
+      ],
+      wearable: {
+        device: 'Apple Watch',
+        activeKcal: 385,
+        avgHr: 148,
+        maxHr: 172,
+        zoneMinutes: { warmup: 4, fatBurn: 10, cardio: 22, peak: 6 },
+      },
+    },
+  },
+  {
+    id: 7,
+    imageUrls: [
+      'https://images.unsplash.com/photo-1571008887538-b36bb32f4571?w=800&h=800&fit=crop',
+      'https://images.unsplash.com/photo-1486218119243-13883505764c?w=800&h=800&fit=crop',
+      'https://images.unsplash.com/photo-1530143584546-02191bc84eb5?w=800&h=800&fit=crop',
+    ],
+    authorImageUrl: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=100&h=100&fit=crop&crop=face',
+    authorName: '김트레이너',
+    location: '잠실 올림픽공원',
+    text: '새벽 5km 러닝으로 하루 시작 ☀️ 아침 공기가 진짜 상쾌하네요. 러닝 후 스트레칭까지 꼼꼼하게!',
+    likeCount: 142,
+    commentCount: 21,
+    isLiked: false,
+    timeAgo: '5시간 전',
+    running: {
+      distance: 5.0,
+      duration: '24:15',
+      avgPace: '4\'51"',
+      splits: [
+        { km: 1, pace: '5\'02"' },
+        { km: 2, pace: '4\'55"' },
+        { km: 3, pace: '4\'48"' },
+        { km: 4, pace: '4\'45"' },
+        { km: 5, pace: '4\'45"' },
+      ],
+      wearable: {
+        device: 'Garmin Forerunner',
+        activeKcal: 280,
+        avgHr: 162,
+        maxHr: 182,
+        zoneMinutes: { warmup: 3, fatBurn: 5, cardio: 12, peak: 5 },
+      },
+    },
+  },
 ]
 
 /* ── Meetup Categories ── */
@@ -273,6 +379,9 @@ export const ActivityPage = () => {
     2: [{ author: '김민수', text: '저도 들어보고 싶어요!' }],
     3: [],
     4: [],
+    5: [{ author: '헬스왕', text: '페이스 잘 나왔네요! 🔥' }],
+    6: [],
+    7: [{ author: '러닝매니아', text: '새벽 러닝 최고죠!' }],
   })
   const submitComment = () => {
     if (!commentInput.trim() || commentFeedId === null) return
@@ -419,13 +528,36 @@ export const ActivityPage = () => {
                       <button
                         key={i}
                         type="button"
-                        onClick={() => feed.workout && setExpandedWorkout(feed.id)}
+                        onClick={() => (feed.workout || feed.running) && setExpandedWorkout(feed.id)}
                         className="w-full flex-shrink-0 snap-center"
                       >
                         <img src={url} alt="피드" className="w-full aspect-square object-cover" />
                       </button>
                     ))}
                   </div>
+                  {feed.running && (
+                    <div className="absolute inset-x-0 bottom-0 pointer-events-none bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 pb-3 px-4">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="px-2 py-0.5 rounded-pill bg-accent-green text-white text-caption font-bold">러닝기록</span>
+                      </div>
+                      <div className="flex items-end gap-4 text-white">
+                        <div>
+                          <div className="text-caption text-white/70 leading-none mb-0.5">거리</div>
+                          <div className="text-body font-extrabold leading-none">{feed.running.distance}<span className="text-caption font-semibold ml-0.5">km</span></div>
+                        </div>
+                        <div className="w-px h-6 bg-white/30" />
+                        <div>
+                          <div className="text-caption text-white/70 leading-none mb-0.5">페이스</div>
+                          <div className="text-body font-extrabold leading-none">{feed.running.avgPace}</div>
+                        </div>
+                        <div className="w-px h-6 bg-white/30" />
+                        <div>
+                          <div className="text-caption text-white/70 leading-none mb-0.5">평균 심박</div>
+                          <div className="text-body font-extrabold leading-none">{feed.running.wearable.avgHr}<span className="text-caption font-semibold ml-0.5">bpm</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {feed.workout && (
                     <div className="absolute inset-x-0 bottom-0 pointer-events-none bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 pb-3 px-4">
                       <div className="flex items-center gap-2 mb-1.5">
@@ -963,6 +1095,21 @@ export const ActivityPage = () => {
                 </div>
               </button>
               <button
+                onClick={() => { setFeedTypeModal(false); navigate('/feed/new?type=running') }}
+                className="flex items-center gap-4 p-4 rounded-card-lg border border-border hover:border-accent-green hover:bg-accent-green/5 transition-colors text-left"
+              >
+                <div className="w-12 h-12 rounded-full bg-accent-green/10 flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 stroke-accent-green stroke-2 fill-none">
+                    <path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zM7 21l3-4 2 1 4-7 2 3h3" />
+                    <path d="M16 9l-3 4-2-1-3 4" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-body font-bold text-ink">러닝 피드</div>
+                  <div className="text-caption text-ink-tertiary">거리 · 페이스 · 구간기록 · 웨어러블 데이터 포함</div>
+                </div>
+              </button>
+              <button
                 onClick={() => { setFeedTypeModal(false); navigate('/feed/new?type=general') }}
                 className="flex items-center gap-4 p-4 rounded-card-lg border border-border hover:border-primary hover:bg-primary-50 transition-colors text-left"
               >
@@ -983,17 +1130,19 @@ export const ActivityPage = () => {
         </div>
       )}
 
-      {/* Workout Full-Screen Modal */}
+      {/* Workout / Running Full-Screen Modal */}
       {expandedWorkout !== null && (() => {
         const feed = feeds.find(f => f.id === expandedWorkout)
-        if (!feed?.workout) return null
-        const w = feed.workout
-        const zoneTotal = w.wearable.zoneMinutes.warmup + w.wearable.zoneMinutes.fatBurn + w.wearable.zoneMinutes.cardio + w.wearable.zoneMinutes.peak
+        if (!feed) return null
+        const isRunning = !!feed.running
+        const wearable = isRunning ? feed.running!.wearable : feed.workout?.wearable
+        if (!wearable) return null
+        const zoneTotal = wearable.zoneMinutes.warmup + wearable.zoneMinutes.fatBurn + wearable.zoneMinutes.cardio + wearable.zoneMinutes.peak
         const zones = [
-          { key: 'warmup', label: '워밍업', min: w.wearable.zoneMinutes.warmup, color: 'bg-ink-disabled' },
-          { key: 'fatBurn', label: '지방연소', min: w.wearable.zoneMinutes.fatBurn, color: 'bg-accent-green' },
-          { key: 'cardio', label: '유산소', min: w.wearable.zoneMinutes.cardio, color: 'bg-primary' },
-          { key: 'peak', label: '최대', min: w.wearable.zoneMinutes.peak, color: 'bg-semantic-like' },
+          { key: 'warmup', label: '워밍업', min: wearable.zoneMinutes.warmup, color: 'bg-ink-disabled' },
+          { key: 'fatBurn', label: '지방연소', min: wearable.zoneMinutes.fatBurn, color: 'bg-accent-green' },
+          { key: 'cardio', label: '유산소', min: wearable.zoneMinutes.cardio, color: 'bg-primary' },
+          { key: 'peak', label: '최대', min: wearable.zoneMinutes.peak, color: 'bg-semantic-like' },
         ]
         return (
           <div className="fixed inset-0 z-[100] flex items-end justify-center">
@@ -1012,54 +1161,95 @@ export const ActivityPage = () => {
               <div className="px-5 pt-6 pb-8 flex flex-col gap-6">
                 {/* Header */}
                 <div className="flex flex-col gap-2">
-                  <span className="inline-flex self-start px-2.5 py-1 rounded-pill bg-primary text-white text-caption font-bold tracking-widest">WORKOUT</span>
+                  <span className={`inline-flex self-start px-2.5 py-1 rounded-pill text-white text-caption font-bold tracking-widest ${isRunning ? 'bg-accent-green' : 'bg-primary'}`}>
+                    {isRunning ? 'RUNNING' : 'WORKOUT'}
+                  </span>
                   <div className="flex items-center gap-2 text-body font-semibold text-white">
-                    <span>{w.duration}</span>
+                    <span>{isRunning ? feed.running!.duration : feed.workout!.duration}</span>
                     <span className="text-white/40">·</span>
                     <span>{feed.authorName}</span>
                   </div>
                 </div>
 
                 {/* Hero stats card */}
-                <div className="grid grid-cols-3 gap-3 p-5 rounded-card-lg bg-white/5 border border-white/10">
-                  <Stat label="총 볼륨" value={w.totalVolume.toLocaleString()} unit="kg" />
-                  <Stat label="세트" value={String(w.totalSets)} divider />
-                  <Stat label="활동 칼로리" value={String(w.wearable.activeKcal)} unit="kcal" />
-                </div>
-
-                {/* Exercises */}
-                <div>
-                  <SectionLabel>종목</SectionLabel>
-                  <div className="flex flex-col gap-2">
-                    {w.exercises.map((ex, i) => (
-                      <div key={i} className="p-4 rounded-card-lg bg-white/5 border border-white/10">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="w-5 h-5 rounded-full bg-primary text-white text-caption font-bold flex items-center justify-center shrink-0 tabular-nums">{i + 1}</span>
-                            <div className="text-body font-semibold text-white truncate">{ex.name}</div>
-                          </div>
-                          <span className="text-caption text-white/50 tabular-nums shrink-0 ml-2">{ex.sets.length}세트</span>
-                        </div>
-                        <div className="flex flex-col gap-0.5">
-                          {ex.sets.map((s, si) => (
-                            <div key={si} className="grid grid-cols-[20px_1fr_1fr] gap-3 py-1.5 text-label tabular-nums border-t border-white/5 first:border-t-0">
-                              <span className="text-white/40 text-center">{si + 1}</span>
-                              <span className="text-white font-semibold">{s.weight === 0 ? '맨몸' : `${s.weight} kg`}</span>
-                              <span className="text-white/70">{s.reps} 회</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                {isRunning ? (
+                  <div className="grid grid-cols-3 gap-3 p-5 rounded-card-lg bg-white/5 border border-white/10">
+                    <Stat label="거리" value={String(feed.running!.distance)} unit="km" />
+                    <Stat label="평균 페이스" value={feed.running!.avgPace} divider />
+                    <Stat label="활동 칼로리" value={String(wearable.activeKcal)} unit="kcal" />
                   </div>
-                </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-3 p-5 rounded-card-lg bg-white/5 border border-white/10">
+                    <Stat label="총 볼륨" value={feed.workout!.totalVolume.toLocaleString()} unit="kg" />
+                    <Stat label="세트" value={String(feed.workout!.totalSets)} divider />
+                    <Stat label="활동 칼로리" value={String(wearable.activeKcal)} unit="kcal" />
+                  </div>
+                )}
+
+                {/* Splits (running) or Exercises (workout) */}
+                {isRunning ? (
+                  <div>
+                    <SectionLabel>구간 기록</SectionLabel>
+                    <div className="p-4 rounded-card-lg bg-white/5 border border-white/10">
+                      <div className="grid grid-cols-[40px_1fr_60px] gap-3 pb-2 mb-1 border-b border-white/10 text-caption text-white/50">
+                        <span>구간</span>
+                        <span>페이스 그래프</span>
+                        <span className="text-right">페이스</span>
+                      </div>
+                      {feed.running!.splits.map((split) => {
+                        const paceSeconds = parseInt(split.pace) * 60 + parseInt(split.pace.split("'")[1])
+                        const maxPace = 420
+                        const minPace = 270
+                        const barWidth = Math.max(20, Math.min(100, ((maxPace - paceSeconds) / (maxPace - minPace)) * 100))
+                        return (
+                          <div key={split.km} className="grid grid-cols-[40px_1fr_60px] gap-3 items-center py-1.5 border-t border-white/5 first:border-t-0">
+                            <span className="text-label text-white/60 tabular-nums">{split.km}km</span>
+                            <div className="h-4 flex items-center">
+                              <div
+                                className="h-full rounded-sm bg-accent-green/70"
+                                style={{ width: `${barWidth}%` }}
+                              />
+                            </div>
+                            <span className="text-label font-semibold text-white text-right tabular-nums">{split.pace}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <SectionLabel>종목</SectionLabel>
+                    <div className="flex flex-col gap-2">
+                      {feed.workout!.exercises.map((ex, i) => (
+                        <div key={i} className="p-4 rounded-card-lg bg-white/5 border border-white/10">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="w-5 h-5 rounded-full bg-primary text-white text-caption font-bold flex items-center justify-center shrink-0 tabular-nums">{i + 1}</span>
+                              <div className="text-body font-semibold text-white truncate">{ex.name}</div>
+                            </div>
+                            <span className="text-caption text-white/50 tabular-nums shrink-0 ml-2">{ex.sets.length}세트</span>
+                          </div>
+                          <div className="flex flex-col gap-0.5">
+                            {ex.sets.map((s, si) => (
+                              <div key={si} className="grid grid-cols-[20px_1fr_1fr] gap-3 py-1.5 text-label tabular-nums border-t border-white/5 first:border-t-0">
+                                <span className="text-white/40 text-center">{si + 1}</span>
+                                <span className="text-white font-semibold">{s.weight === 0 ? '맨몸' : `${s.weight} kg`}</span>
+                                <span className="text-white/70">{s.reps} 회</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Wearable */}
                 <div className="p-5 rounded-card-lg bg-gradient-to-br from-accent-purple/20 to-white/5 border border-accent-purple/30">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse" />
-                      <span className="text-label font-bold text-white">{w.wearable.device}</span>
+                      <span className="text-label font-bold text-white">{wearable.device}</span>
                     </div>
                     <span className="text-caption text-white/50">실시간 동기화</span>
                   </div>
@@ -1067,13 +1257,13 @@ export const ActivityPage = () => {
                     <div>
                       <div className="text-caption text-white/50 mb-1">평균 심박</div>
                       <div className="text-heading font-extrabold leading-none tabular-nums">
-                        {w.wearable.avgHr}<span className="text-label font-semibold text-white/50 ml-1">bpm</span>
+                        {wearable.avgHr}<span className="text-label font-semibold text-white/50 ml-1">bpm</span>
                       </div>
                     </div>
                     <div>
                       <div className="text-caption text-white/50 mb-1">최대 심박</div>
                       <div className="text-heading font-extrabold leading-none text-semantic-like tabular-nums">
-                        {w.wearable.maxHr}<span className="text-label font-semibold text-white/50 ml-1">bpm</span>
+                        {wearable.maxHr}<span className="text-label font-semibold text-white/50 ml-1">bpm</span>
                       </div>
                     </div>
                   </div>

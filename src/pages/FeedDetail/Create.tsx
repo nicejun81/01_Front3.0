@@ -5,9 +5,14 @@ import { IconMapPin, IconX } from '../../components/Icons'
 
 type WorkoutSet = { weight: string; reps: string }
 type WorkoutExercise = { name: string; sets: WorkoutSet[] }
-const STEPS = [
+const WORKOUT_STEPS = [
   { num: 1, label: '사진 · 내용' },
   { num: 2, label: '운동기록' },
+] as const
+
+const RUNNING_STEPS = [
+  { num: 1, label: '사진 · 내용' },
+  { num: 2, label: '러닝기록' },
 ] as const
 
 const SectionTitle = ({ label, required, trailing }: { label: string; required?: boolean; trailing?: string }) => (
@@ -25,7 +30,11 @@ export const FeedCreatePage = () => {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const isEdit = !!id
-  const isWorkout = searchParams.get('type') === 'workout'
+  const feedType = searchParams.get('type') || 'general'
+  const isWorkout = feedType === 'workout'
+  const isRunning = feedType === 'running'
+  const hasStep2 = isWorkout || isRunning
+  const STEPS = isRunning ? RUNNING_STEPS : WORKOUT_STEPS
 
   const [step, setStep] = useState<1 | 2>(1)
 
@@ -73,6 +82,7 @@ export const FeedCreatePage = () => {
   const [exercises, setExercises] = useState<WorkoutExercise[]>([
     { name: '', sets: [{ weight: '', reps: '' }] },
   ])
+
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return
@@ -137,15 +147,15 @@ export const FeedCreatePage = () => {
     validExerciseCount > 0 ||
     anySetFilled
   const missing: string[] = []
-  if (workoutPartial) {
+  if (isWorkout && workoutPartial) {
     if (!workoutDuration.trim()) missing.push('운동 시간')
     if (validExerciseCount === 0) missing.push('운동 이름')
   }
-  const canStep2 = !workoutPartial || missing.length === 0
+  const canStep2 = !workoutPartial || missing.length === 0 || isRunning
 
   const handleNext = () => {
     if (step === 1 && canStep1) {
-      if (isWorkout) setStep(2)
+      if (hasStep2) setStep(2)
       else {
         alert(isEdit ? '피드가 수정되었어요!' : '피드가 등록되었어요!')
         navigate('/activity')
@@ -165,7 +175,7 @@ export const FeedCreatePage = () => {
   return (
     <PageLayout header={header} hideBottomNav className="!px-0 !pb-0 !bg-surface-muted flex flex-col min-h-[calc(100vh-56px)]">
       {/* Step Indicator */}
-      {isWorkout && <div className="px-page py-4 border-b border-border-light">
+      {hasStep2 && <div className="px-page py-4 border-b border-border-light">
         <div className="flex items-center gap-2">
           {STEPS.map((s, i) => {
             const isActive = step === s.num
@@ -353,10 +363,10 @@ export const FeedCreatePage = () => {
         </div>
       )}
 
-      {/* ─── STEP 2: 운동기록 ─── */}
-      {step === 2 && (
+      {/* ─── STEP 2: 운동기록 / 러닝기록 ─── */}
+      {step === 2 && (isWorkout || isRunning) && (
         <div className="flex flex-col flex-1">
-          <section className="bg-surface px-page py-4">
+          {isWorkout && <section className="bg-surface px-page py-4">
             <SectionTitle label="종목" />
             <div className="flex flex-col gap-3">
               {exercises.map((ex, i) => (
@@ -439,9 +449,9 @@ export const FeedCreatePage = () => {
                 + 종목 추가
               </button>
             </div>
-          </section>
+          </section>}
 
-          <div className="h-2 bg-surface-muted" />
+          {isWorkout && <div className="h-2 bg-surface-muted" />}
 
           {/* 운동 시간 */}
           <section className="bg-surface px-page py-4">
@@ -540,9 +550,11 @@ export const FeedCreatePage = () => {
         </div>
       )}
 
+
+
       <BottomCTA hideBottomNav>
         <div className="flex flex-col gap-1 w-full">
-          {step === 2 && missing.length > 0 && (
+          {step === 2 && isWorkout && missing.length > 0 && (
             <div className="text-caption text-semantic-like text-center">
               입력이 필요합니다: {missing.join(', ')}
             </div>
@@ -561,7 +573,7 @@ export const FeedCreatePage = () => {
               onClick={handleNext}
               className="flex-1 py-4 bg-primary text-white font-semibold rounded-card hover:bg-primary-dark transition-colors disabled:bg-ink-disabled disabled:cursor-not-allowed"
             >
-              {(step === 2 || !isWorkout) ? (isEdit ? '수정하기' : '등록하기') : '다음'}
+              {(step === 2 || !hasStep2) ? (isEdit ? '수정하기' : '등록하기') : '다음'}
             </button>
           </div>
         </div>

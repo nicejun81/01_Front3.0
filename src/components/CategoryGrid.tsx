@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
 import {
   IconVideo,
+  IconZap,
   IconShoppingBag,
   IconBook,
   IconUsers,
   IconCalendarCheck,
   IconUserPlus,
   IconStar,
-  IconBarChart,
 } from './Icons'
 
 interface CategoryItem {
@@ -27,11 +27,11 @@ const categories: CategoryItem[] = [
     gradient: 'bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA]',
   },
   {
-    id: 'shop',
-    label: '쇼핑몰',
-    icon: <IconShoppingBag className="w-7 h-7 stroke-white stroke-[1.5]" />,
-    href: '/shop',
-    gradient: 'bg-gradient-to-br from-[#10B981] to-[#4ade9f]',
+    id: 'workout',
+    label: '맞춤운동',
+    icon: <IconZap className="w-7 h-7 stroke-white stroke-[1.5]" />,
+    href: '/workout',
+    gradient: 'bg-gradient-to-br from-[#F97316] to-[#fb923c]',
   },
   {
     id: 'feed',
@@ -69,11 +69,11 @@ const categories: CategoryItem[] = [
     gradient: 'bg-gradient-to-br from-[#EC4899] to-[#f472b6]',
   },
   {
-    id: 'ambassador',
-    label: '엠버서더',
-    icon: <IconBarChart className="w-7 h-7 stroke-white stroke-[1.5]" />,
-    href: '/ambassador',
-    gradient: 'bg-gradient-to-br from-[#8B5CF6] to-[#a78bfa]',
+    id: 'shop',
+    label: '쇼핑몰',
+    icon: <IconShoppingBag className="w-7 h-7 stroke-white stroke-[1.5]" />,
+    href: '/shop',
+    gradient: 'bg-gradient-to-br from-[#10B981] to-[#4ade9f]',
   },
 ]
 

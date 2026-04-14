@@ -1,14 +1,6 @@
 import { useNavigate } from 'react-router-dom'
-import { PageLayout, SubPageHeader, ScrollRow } from '../../components'
-import { IconStarFilled, IconChevronRight, IconSearch } from '../../components/Icons'
-
-
-const myMemberships = [
-  { id: 1, status: '이용중', gym: '바디채널 강남점', days: '67일 남음', variant: 'primary' },
-  { id: 2, status: '이용중', gym: '바디채널 역삼점', days: '23일 남음', variant: 'secondary' },
-  { id: 3, status: '일시정지', gym: '바디채널 서초점', days: '45일 남음', variant: 'secondary' },
-  { id: 4, status: '시작전', gym: '바디채널 판교점', days: '30일권', variant: 'waiting' },
-]
+import { PageLayout, SubPageHeader } from '../../components'
+import { IconStarFilled, IconSearch } from '../../components/Icons'
 
 const gyms = [
   {
@@ -83,41 +75,6 @@ export const MembershipPage = () => {
 
   return (
     <PageLayout header={header}>
-      {/* My Memberships Banner */}
-      <ScrollRow className="pb-4">
-        {myMemberships.map((membership) => (
-          <div
-            key={membership.id}
-            className={`min-w-[280px] flex-shrink-0 flex justify-between items-center p-3.5 rounded-card cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-elevated ${
-              membership.variant === 'waiting'
-                ? 'bg-surface border-2 border-ink-disabled'
-                : membership.variant === 'secondary'
-                ? 'bg-ink-secondary'
-                : 'bg-ink'
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <span className={`badge ${
-                membership.variant === 'waiting' ? 'bg-ink-placeholder text-white' : 'bg-primary text-white'
-              }`}>
-                {membership.status}
-              </span>
-              <span className={membership.variant === 'waiting' ? 'text-ink text-body font-semibold' : 'text-white text-body font-semibold'}>
-                {membership.gym}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className={membership.variant === 'waiting' ? 'text-ink-secondary text-body font-semibold' : 'text-primary text-body font-semibold'}>
-                {membership.days}
-              </span>
-              <IconChevronRight className="w-4 h-4 stroke-ink-placeholder stroke-[1.5]" />
-            </div>
-          </div>
-        ))}
-      </ScrollRow>
-
-      <div className="h-2 bg-surface-muted -mx-page" />
-
       {/* Gym List */}
       <section>
         <div className="flex justify-between items-center mb-4">

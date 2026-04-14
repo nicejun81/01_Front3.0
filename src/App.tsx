@@ -18,7 +18,6 @@ import {
   AttendancePage,
   InvitePage,
   ReviewEventPage,
-  AmbassadorPage,
   TrainerDetailPage,
   TrainerReviewsPage,
   ClassDetailPage,
@@ -49,6 +48,7 @@ import {
   BranchSelectPage,
   ReservationPage,
   WalletPage,
+  WorkoutPage,
 } from './pages'
 import { QrScanner } from './components/QrScanner'
 
@@ -70,7 +70,6 @@ export const App = () => {
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/invite" element={<InvitePage />} />
         <Route path="/review-event" element={<ReviewEventPage />} />
-        <Route path="/ambassador" element={<AmbassadorPage />} />
         <Route path="/trainer/:id" element={<TrainerDetailPage />} />
         <Route path="/trainer/:id/reviews" element={<TrainerReviewsPage />} />
         <Route path="/class/:id" element={<ClassDetailPage />} />
@@ -94,6 +93,7 @@ export const App = () => {
         <Route path="/purchase/docs" element={<PurchaseDocsPage />} />
         <Route path="/branch" element={<BranchSelectPage />} />
         <Route path="/reservation" element={<ReservationPage />} />
+        <Route path="/workout" element={<WorkoutPage />} />
         <Route path="/wallet/:type" element={<WalletPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/blocked" element={<BlockedPage />} />

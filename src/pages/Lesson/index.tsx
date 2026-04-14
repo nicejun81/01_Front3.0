@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PageLayout, SubPageHeader, ScrollRow, TrainerListItem, PTTrainerCard, FilterTabs, EmptyState } from '../../components'
-import { IconSearch, IconChevronRight } from '../../components/Icons'
+import { PageLayout, SubPageHeader, TrainerListItem, PTTrainerCard, FilterTabs, EmptyState } from '../../components'
+import { IconSearch } from '../../components/Icons'
 const instructorLessonMap: Record<string, string> = {
   // PT 강사 → PT 레슨
   '최강민': 'pt-kangmin',
@@ -43,11 +43,6 @@ const categoryDescriptions: Record<string, { title: string; desc: string; icon: 
   hit35: { title: '35분 고강도 인터벌', desc: '35분간 집중적으로 진행되는 HIIT 프로그램. 짧은 시간 안에 최대 칼로리를 소모하며 심폐 기능을 끌어올립니다.', icon: '⚡' },
 }
 
-const myLessons = [
-  { id: 1, status: '이용중', trainer: '최강민 강사', remain: '8회 남음', variant: 'primary' },
-  { id: 2, status: '이용중', trainer: '박지영 강사', remain: '3회 남음', variant: 'secondary' },
-  { id: 3, status: '대기중', trainer: '정서연 강사', remain: '10회권', variant: 'waiting' },
-]
 
 interface LessonScheduleItem {
   time: string; name: string; instructor: string; avatar: string; category: string
@@ -482,43 +477,8 @@ export const LessonPage = () => {
         </div>
       )}
 
-      {/* My Lessons Banner */}
-      <ScrollRow className="mb-section">
-        {myLessons.map((lesson) => (
-          <div
-            key={lesson.id}
-            className={`min-w-[280px] flex-shrink-0 flex justify-between items-center p-3.5 rounded-card cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-elevated ${
-              lesson.variant === 'waiting'
-                ? 'bg-surface border-2 border-ink-disabled'
-                : lesson.variant === 'secondary'
-                ? 'bg-ink-secondary'
-                : 'bg-ink'
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <span className={`badge ${
-                lesson.variant === 'waiting' ? 'bg-ink-placeholder text-white' : 'bg-primary text-white'
-              }`}>
-                {lesson.status}
-              </span>
-              <span className={lesson.variant === 'waiting' ? 'text-ink text-body font-semibold' : 'text-white text-body font-semibold'}>
-                {lesson.trainer}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className={lesson.variant === 'waiting' ? 'text-ink-secondary text-body font-semibold' : 'text-primary text-body font-semibold'}>
-                {lesson.remain}
-              </span>
-              <IconChevronRight className="w-4 h-4 stroke-ink-placeholder stroke-[1.5]" />
-            </div>
-          </div>
-        ))}
-      </ScrollRow>
-
-      <div className="h-2 bg-surface-muted -mx-page" />
-
       {/* Lesson Schedule */}
-      <section className="py-section">
+      <section className="pb-section">
         <h3 className="text-heading font-bold text-ink mb-4">강사 목록</h3>
         <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-4">
           {scheduleDays.map((d, i) => (
