@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
   IconVideo,
-  IconZap,
+  IconBot,
   IconShoppingBag,
   IconBook,
   IconUsers,
@@ -29,7 +29,7 @@ const categories: CategoryItem[] = [
   {
     id: 'workout',
     label: '맞춤운동',
-    icon: <IconZap className="w-7 h-7 stroke-white stroke-[1.5]" />,
+    icon: <IconBot className="w-7 h-7 stroke-white stroke-[1.5]" />,
     href: '/workout',
     gradient: 'bg-gradient-to-br from-[#F97316] to-[#fb923c]',
   },

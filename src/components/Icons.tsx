@@ -293,3 +293,14 @@ export const IconMapPin = ({ className }: IconProps) => (
     <circle cx="12" cy="10" r="3" />
   </svg>
 )
+
+export const IconBot = ({ className }: IconProps) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
+    <rect x="3" y="11" width="18" height="10" rx="3" />
+    <circle cx="9" cy="16" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="15" cy="16" r="1.5" fill="currentColor" stroke="none" />
+    <path d="M12 2v4" />
+    <circle cx="12" cy="2" r="1.5" />
+    <path d="M1 16h2M21 16h2" />
+  </svg>
+)
