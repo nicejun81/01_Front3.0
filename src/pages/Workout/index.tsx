@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { PageLayout, SubPageHeader } from '../../components'
-import { IconCheck } from '../../components/Icons'
+import { IconCheck, IconBot } from '../../components/Icons'
 
 const InField = ({ label, value, onChange, unit, placeholder, required }: { label: string; value: string; onChange: (v: string) => void; unit: string; placeholder: string; required?: boolean }) => (
   <div className="relative">
@@ -107,8 +108,19 @@ const ALL_EXERCISES: Exercise[] = [
   { id: 21, name: '로잉 머신', category: '유산소', muscle: '전신 · 심폐', sets: '-', reps: '15-20분', imageUrl: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=200&h=200&fit=crop' },
 ]
 
+type AiProgram = {
+  id: number
+  title?: string
+  period: string
+  goal: string
+  level: string
+  createdAt: string
+  schedule: { day: string; focus: string; exercises: Exercise[] }[]
+}
+
 const SAVED_KEY = 'saved-workouts'
 const BODY_CHECK_KEY = 'body-check'
+const AI_PROGRAMS_KEY = 'ai-programs'
 
 const loadSaved = (): number[] => {
   try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]') }
@@ -117,6 +129,153 @@ const loadSaved = (): number[] => {
 const loadBodyCheck = (): BodyCheck | null => {
   try { return JSON.parse(localStorage.getItem(BODY_CHECK_KEY) || 'null') }
   catch { return null }
+}
+const loadAiPrograms = (): AiProgram[] => {
+  try { return JSON.parse(localStorage.getItem(AI_PROGRAMS_KEY) || '[]') }
+  catch { return [] }
+}
+
+const CATEGORIES = ['전체', '가슴', '등', '어깨', '하체', '팔', '코어', '유산소'] as const
+
+const CustomWorkoutTab = ({ saved, toggleSave, savedExercises, toast, setToast }: {
+  saved: number[]
+  toggleSave: (ex: Exercise) => void
+  savedExercises: Exercise[]
+  toast: string | null
+  setToast: (v: string | null) => void
+}) => {
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchCategory, setSearchCategory] = useState<string>('전체')
+
+  const filteredExercises = useMemo(() => {
+    return ALL_EXERCISES
+      .filter(e => searchCategory === '전체' || e.category === searchCategory)
+      .filter(e => {
+        if (!searchQuery) return true
+        const q = searchQuery.toLowerCase()
+        return e.name.toLowerCase().includes(q) || e.muscle.toLowerCase().includes(q) || e.category.toLowerCase().includes(q)
+      })
+  }, [searchQuery, searchCategory])
+
+  return (
+    <>
+      {/* 내 운동 리스트 */}
+      {savedExercises.length > 0 && (
+        <div className="flex flex-col gap-2 pb-4">
+          <h3 className="text-body font-bold text-ink">내 운동 리스트</h3>
+          {savedExercises.map((ex, i) => (
+            <div key={ex.id} className="flex items-center gap-3 p-3 bg-surface border border-border rounded-card-lg">
+              <span className="w-7 h-7 rounded-full bg-primary text-white text-caption font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
+              <img src={ex.imageUrl} alt={ex.name} className="w-12 h-12 rounded-card object-cover flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-body font-bold text-ink truncate">{ex.name}</span>
+                  <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-caption font-semibold rounded">{ex.category}</span>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-caption text-ink-secondary">{ex.muscle}</span>
+                  <span className="text-caption text-ink-placeholder">·</span>
+                  <span className="text-caption text-ink-tertiary">{ex.sets !== '-' ? `${ex.sets}세트 × ${ex.reps}` : ex.reps}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => toggleSave(ex)}
+                className="w-8 h-8 rounded-full bg-semantic-like/10 flex items-center justify-center flex-shrink-0 hover:bg-semantic-like/20"
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-semantic-like stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+          ))}
+          <div className="mt-1 p-4 bg-surface-muted rounded-card-lg text-center">
+            <div className="text-body font-bold text-ink mb-1">총 {savedExercises.length}개 운동</div>
+            <div className="text-caption text-ink-tertiary">
+              예상 소요시간 약 {Math.round(savedExercises.reduce((acc, ex) => acc + (ex.sets !== '-' ? Number(ex.sets) * 2.5 : 20), 0))}분
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 운동 검색 & 목록 */}
+      <div className="mt-2">
+        <h3 className="text-body font-bold text-ink mb-3">운동 검색</h3>
+
+        {/* 검색바 */}
+        <div className="relative mb-3">
+          <svg viewBox="0 0 24 24" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 stroke-ink-placeholder stroke-2 fill-none">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="운동 이름, 부위, 근육으로 검색"
+            className="w-full pl-9 pr-3 py-2.5 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-ink-disabled flex items-center justify-center"
+            >
+              <svg viewBox="0 0 24 24" className="w-3 h-3 stroke-white stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+          )}
+        </div>
+
+        {/* 카테고리 필터 */}
+        <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setSearchCategory(cat)}
+              className={`px-3 py-1.5 rounded-pill text-caption font-semibold whitespace-nowrap transition-colors ${
+                searchCategory === cat ? 'bg-primary text-white' : 'bg-surface-muted text-ink-tertiary hover:text-ink'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* 운동 목록 */}
+        <div className="flex flex-col gap-1.5">
+          {filteredExercises.length > 0 ? filteredExercises.map(ex => {
+            const isSaved = saved.includes(ex.id)
+            return (
+              <button
+                key={ex.id}
+                onClick={() => toggleSave(ex)}
+                className={`flex items-center gap-3 p-3 rounded-card-lg border transition-all text-left ${
+                  isSaved ? 'border-primary/30 bg-primary/5' : 'border-border bg-surface hover:border-ink-disabled'
+                }`}
+              >
+                <img src={ex.imageUrl} alt={ex.name} className="w-12 h-12 rounded-card object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-label font-semibold text-ink truncate">{ex.name}</span>
+                    <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-caption font-semibold rounded">{ex.category}</span>
+                  </div>
+                  <div className="text-caption text-ink-tertiary mt-0.5">{ex.muscle} · {ex.sets !== '-' ? `${ex.sets}세트 × ${ex.reps}` : ex.reps}</div>
+                </div>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+                  isSaved ? 'bg-primary' : 'bg-surface-muted'
+                }`}>
+                  {isSaved ? (
+                    <IconCheck className="w-4 h-4 stroke-white stroke-[2.5]" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-ink-placeholder stroke-2 fill-none"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                  )}
+                </div>
+              </button>
+            )
+          }) : (
+            <div className="py-8 text-center">
+              <div className="text-caption text-ink-placeholder">검색 결과가 없습니다</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )
 }
 
 export const WorkoutPage = () => {
@@ -133,9 +292,44 @@ export const WorkoutPage = () => {
   const [mode, setMode] = useState<null | 'confirm' | 'custom'>(null)
 
   // workout state
-  const [workoutTab, setWorkoutTab] = useState<'ai' | 'custom'>('custom')
+  const [workoutTab, setWorkoutTab] = useState<'ai' | 'custom'>('ai')
   const [saved, setSaved] = useState<number[]>(loadSaved)
   const [toast, setToast] = useState<string | null>(null)
+
+  // AI 맞춤운동 state
+  const [aiMode, setAiMode] = useState<null | 'select-period' | 'generating'>(null)
+  const [aiPeriod, setAiPeriod] = useState<string | null>(null)
+  const [aiPrograms, setAiPrograms] = useState<AiProgram[]>(loadAiPrograms)
+  const nav = useNavigate()
+
+  const generateAiProgram = () => {
+    const periodDays: Record<string, number> = { '1일': 1, '1주': 7, '2주': 14, '1개월': 30, '3개월': 90, '6개월': 180, '1년': 365 }
+    const days = periodDays[aiPeriod || '1일'] || 1
+    const weeklySchedule = [
+      { day: '월', focus: '가슴 · 삼두', exercises: ALL_EXERCISES.filter(e => ['가슴', '팔'].includes(e.category)).slice(0, 4) },
+      { day: '화', focus: '등 · 이두', exercises: ALL_EXERCISES.filter(e => ['등', '팔'].includes(e.category)).slice(0, 4) },
+      { day: '수', focus: '유산소 · 코어', exercises: ALL_EXERCISES.filter(e => ['유산소', '코어'].includes(e.category)).slice(0, 4) },
+      { day: '목', focus: '어깨', exercises: ALL_EXERCISES.filter(e => e.category === '어깨').slice(0, 3) },
+      { day: '금', focus: '하체', exercises: ALL_EXERCISES.filter(e => e.category === '하체').slice(0, 4) },
+      { day: '토', focus: '전신 · 유산소', exercises: [...ALL_EXERCISES.filter(e => e.category === '유산소'), ...ALL_EXERCISES.filter(e => e.category === '코어')].slice(0, 3) },
+      { day: '일', focus: '휴식', exercises: [] },
+    ]
+    const schedule = days === 1 ? weeklySchedule.slice(0, 1) : weeklySchedule
+    const program: AiProgram = {
+      id: Date.now(),
+      period: aiPeriod || '1일',
+      goal: bodyCheck?.goal || '',
+      level: bodyCheck?.level || '',
+      createdAt: new Date().toLocaleDateString('ko-KR'),
+      schedule,
+    }
+    const updated = [program, ...aiPrograms]
+    setAiPrograms(updated)
+    localStorage.setItem(AI_PROGRAMS_KEY, JSON.stringify(updated))
+    setAiMode(null)
+    setAiPeriod(null)
+    nav(`/workout/${program.id}`)
+  }
 
   const togglePain = (key: string) => {
     if (key === '없음') { setPainAreas(['없음']); return }
@@ -667,57 +861,139 @@ export const WorkoutPage = () => {
 
       {/* AI 맞춤운동 탭 내용 */}
       {workoutTab === 'ai' && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="text-[48px] mb-4">🤖</div>
-          <div className="text-body font-bold text-ink mb-1">AI 맞춤운동 준비 중</div>
-          <div className="text-caption text-ink-tertiary">곧 AI가 나의 몸상태를 분석하여 맞춤 운동을 추천해 드릴게요</div>
+        <div>
+          {/* 기간 선택 모드 */}
+          {aiMode === 'select-period' && (
+            <div>
+              <h2 className="text-heading font-bold text-ink mb-1">운동 기간을 선택하세요</h2>
+              <p className="text-body text-ink-secondary mb-5">선택한 기간에 맞춰 AI가 운동 프로그램을 설계합니다</p>
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { key: '1일', label: '1일', desc: '오늘 하루 운동', icon: '⚡' },
+                  { key: '1주', label: '1주', desc: '일주일 루틴', icon: '📅' },
+                  { key: '2주', label: '2주', desc: '2주 집중 프로그램', icon: '🔥' },
+                  { key: '1개월', label: '1개월', desc: '한 달 체계적 관리', icon: '💪' },
+                  { key: '3개월', label: '3개월', desc: '분기별 체형 변화', icon: '🏆' },
+                  { key: '6개월', label: '6개월', desc: '반년 장기 프로젝트', icon: '🎯' },
+                  { key: '1년', label: '1년', desc: '연간 바디 프로젝트', icon: '👑' },
+                ] as const).map(p => {
+                  const on = aiPeriod === p.key
+                  return (
+                    <button
+                      key={p.key}
+                      onClick={() => setAiPeriod(p.key)}
+                      className={`flex items-center gap-3 p-4 rounded-card-lg border-2 transition-all text-left ${
+                        on ? 'border-primary bg-primary/5 shadow-card' : 'border-border bg-surface hover:border-ink-disabled'
+                      }`}
+                    >
+                      <span className="text-2xl">{p.icon}</span>
+                      <div>
+                        <div className={`text-body font-bold ${on ? 'text-primary' : 'text-ink'}`}>{p.label}</div>
+                        <div className="text-caption text-ink-tertiary">{p.desc}</div>
+                      </div>
+                      {on && (
+                        <div className="ml-auto">
+                          <IconCheck className="w-5 h-5 stroke-primary stroke-[2.5]" />
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={() => { setAiMode(null); setAiPeriod(null) }}
+                  className="px-5 py-4 bg-surface-muted text-ink font-semibold rounded-card hover:bg-ink-disabled transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  disabled={!aiPeriod}
+                  onClick={() => {
+                    setAiMode('generating')
+                    setTimeout(() => generateAiProgram(), 2000)
+                  }}
+                  className="flex-1 py-4 bg-primary text-white font-bold rounded-card hover:bg-primary-dark transition-colors disabled:bg-ink-disabled disabled:cursor-not-allowed"
+                >
+                  AI 운동 프로그램 생성
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 생성 중 */}
+          {aiMode === 'generating' && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="relative w-20 h-20 mb-6">
+                <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center"><IconBot className="w-8 h-8 text-primary stroke-primary stroke-[1.5]" /></div>
+              </div>
+              <div className="text-body font-bold text-ink mb-1">AI가 운동 프로그램을 만들고 있어요</div>
+              <div className="text-caption text-ink-tertiary">{aiPeriod} 맞춤 프로그램 설계 중...</div>
+            </div>
+          )}
+
+          {/* 프로그램 리스트 (기본 화면) */}
+          {!aiMode && (
+            <div>
+              {/* 만들기 버튼 */}
+              <button
+                onClick={() => setAiMode('select-period')}
+                className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white font-bold text-body rounded-card-lg hover:bg-primary-dark transition-colors shadow-card mb-5"
+              >
+                <IconBot className="w-6 h-6 text-white stroke-white stroke-[1.5]" />
+                AI 맞춤운동 만들기
+              </button>
+
+              {/* 만든 프로그램 리스트 */}
+              {aiPrograms.length > 0 ? (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-body font-bold text-ink">내 운동 프로그램</h3>
+                    <span className="text-caption text-ink-tertiary">{aiPrograms.length}개</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {aiPrograms.map(prog => {
+                      const goalLabel = GOALS.find(g => g.key === prog.goal)?.label || ''
+                      const totalExercises = prog.schedule.reduce((sum, s) => sum + s.exercises.length, 0)
+                      return (
+                        <button
+                          key={prog.id}
+                          onClick={() => nav(`/workout/${prog.id}`)}
+                          className="flex items-center gap-3 p-4 bg-surface border border-border rounded-card-lg text-left hover:border-primary/30 hover:shadow-card transition-all"
+                        >
+                          <div className="w-12 h-12 rounded-card bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <IconBot className="w-7 h-7 text-primary stroke-primary stroke-[1.5]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-body font-bold text-ink truncate">{prog.title || `${prog.period} ${goalLabel} 프로그램`}</div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-caption text-ink-tertiary">{prog.createdAt}</span>
+                              <span className="text-caption text-ink-placeholder">·</span>
+                              <span className="text-caption text-ink-tertiary">{totalExercises}종목</span>
+                            </div>
+                          </div>
+                          <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-ink-placeholder stroke-2 fill-none flex-shrink-0"><path d="M9 18l6-6-6-6" /></svg>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="text-[40px] mb-3">💪</div>
+                  <div className="text-body font-bold text-ink mb-1">아직 만든 프로그램이 없어요</div>
+                  <div className="text-caption text-ink-tertiary">위 버튼을 눌러 AI 맞춤운동을 만들어 보세요</div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* 커스텀 운동 탭 내용 */}
-      {workoutTab === 'custom' && <>
-        {savedExercises.length > 0 ? (
-            <div className="flex flex-col gap-2 pb-4">
-              {savedExercises.map((ex, i) => (
-                <div key={ex.id} className="flex items-center gap-3 p-3 bg-surface border border-border rounded-card-lg">
-                  <span className="w-7 h-7 rounded-full bg-primary text-white text-caption font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
-                  <img src={ex.imageUrl} alt={ex.name} className="w-12 h-12 rounded-card object-cover flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-body font-bold text-ink truncate">{ex.name}</span>
-                      <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-caption font-semibold rounded">{ex.category}</span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-caption text-ink-secondary">{ex.muscle}</span>
-                      <span className="text-caption text-ink-placeholder">·</span>
-                      <span className="text-caption text-ink-tertiary">{ex.sets !== '-' ? `${ex.sets}세트 × ${ex.reps}` : ex.reps}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => toggleSave(ex)}
-                    className="w-8 h-8 rounded-full bg-semantic-like/10 flex items-center justify-center flex-shrink-0 hover:bg-semantic-like/20"
-                  >
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-semantic-like stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                  </button>
-                </div>
-              ))}
-              <div className="mt-2 p-4 bg-surface-muted rounded-card-lg text-center">
-                <div className="text-body font-bold text-ink mb-1">총 {savedExercises.length}개 운동</div>
-                <div className="text-caption text-ink-tertiary">
-                  예상 소요시간 약 {Math.round(savedExercises.reduce((acc, ex) => acc + (ex.sets !== '-' ? Number(ex.sets) * 2.5 : 20), 0))}분
-                </div>
-              </div>
-
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="text-[48px] mb-4">🏋️</div>
-              <div className="text-body font-bold text-ink mb-1">아직 설정한 운동이 없어요</div>
-              <div className="text-caption text-ink-tertiary">아래 목록에서 운동을 선택해 보세요</div>
-            </div>
-          )}
-
-      </>}
+      {workoutTab === 'custom' && <CustomWorkoutTab saved={saved} toggleSave={toggleSave} savedExercises={savedExercises} toast={toast} setToast={setToast} />}
 
       {/* Toast */}
       {toast && (
@@ -725,6 +1001,7 @@ export const WorkoutPage = () => {
           {toast}
         </div>
       )}
+
     </PageLayout>
   )
 }

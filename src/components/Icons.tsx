@@ -296,11 +296,12 @@ export const IconMapPin = ({ className }: IconProps) => (
 
 export const IconBot = ({ className }: IconProps) => (
   <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
-    <rect x="3" y="11" width="18" height="10" rx="3" />
-    <circle cx="9" cy="16" r="1.5" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="16" r="1.5" fill="currentColor" stroke="none" />
-    <path d="M12 2v4" />
-    <circle cx="12" cy="2" r="1.5" />
-    <path d="M1 16h2M21 16h2" />
+    {/* sparkle star */}
+    <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z" fill="currentColor" stroke="none" />
+    {/* small sparkles */}
+    <path d="M19 12l.75 2.25L22 15l-2.25.75L19 18l-.75-2.25L16 15l2.25-.75L19 12z" fill="currentColor" stroke="none" />
+    <path d="M5 14l.5 1.5L7 16l-1.5.5L5 18l-.5-1.5L3 16l1.5-.5L5 14z" fill="currentColor" stroke="none" />
+    {/* AI text */}
+    <text x="12" y="23" textAnchor="middle" fill="currentColor" stroke="none" fontSize="6.5" fontWeight="800" fontFamily="system-ui, sans-serif" letterSpacing="0.5">AI</text>
   </svg>
 )
