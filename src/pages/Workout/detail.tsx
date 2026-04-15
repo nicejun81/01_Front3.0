@@ -100,6 +100,17 @@ export const AiProgramDetailPage = () => {
     savePrograms(updated)
   }
 
+  const toggleRest = (dayLabel: string) => {
+    if (!program) return
+    const s = program.schedule.find(d => d.day === dayLabel)
+    if (!s) return
+    if (s.focus === '휴식') {
+      updateSchedule(program.schedule.map(d => d.day === dayLabel ? { ...d, focus: '운동', exercises: [] } : d))
+    } else {
+      updateSchedule(program.schedule.map(d => d.day === dayLabel ? { ...d, focus: '휴식', exercises: [] } : d))
+    }
+  }
+
   const removeExercise = (dayLabel: string, exId: number) => {
     if (!program) return
     updateSchedule(program.schedule.map(s =>
@@ -202,18 +213,34 @@ export const AiProgramDetailPage = () => {
 
       <h3 className="text-body font-bold text-ink mb-3">{days === 1 ? '오늘의 운동' : '주간 운동 스케줄'}</h3>
       <div className="flex flex-col gap-3 mb-6">
-        {program.schedule.map(s => (
-          <div key={s.day} className="border border-border rounded-card-lg overflow-hidden">
-            <div className={`flex items-center justify-between px-4 py-2.5 ${s.exercises.length > 0 ? 'bg-primary/5' : 'bg-surface-muted'}`}>
+        {program.schedule.map(s => {
+          const todayDay = ['일', '월', '화', '수', '목', '금', '토'][new Date().getDay()]
+          const isToday = s.day === todayDay
+          return (
+          <div key={s.day} className={`border rounded-card-lg overflow-hidden ${isToday ? 'border-primary border-2' : 'border-border'}`}>
+            <div className={`flex items-center justify-between px-4 py-2.5 ${s.focus === '휴식' ? 'bg-surface-muted' : s.exercises.length > 0 ? 'bg-primary/5' : 'bg-surface-muted'}`}>
               <div className="flex items-center gap-2">
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-caption font-bold ${
-                  s.exercises.length > 0 ? 'bg-primary text-white' : 'bg-ink-disabled text-ink-placeholder'
+                  s.focus === '휴식' ? 'bg-ink-disabled text-ink-placeholder' : s.exercises.length > 0 ? 'bg-primary text-white' : 'bg-primary/30 text-white'
                 }`}>{days === 1 ? 'D1' : s.day}</span>
                 <span className="text-label font-bold text-ink">{s.focus}</span>
+                {isToday && <span className="px-1.5 py-0.5 bg-primary text-white text-[10px] font-bold rounded">오늘</span>}
               </div>
-              {s.exercises.length > 0 && (
-                <span className="text-caption text-ink-tertiary">{s.exercises.length}종목</span>
-              )}
+              <div className="flex items-center gap-2">
+                {s.exercises.length > 0 && (
+                  <span className="text-caption text-ink-tertiary">{s.exercises.length}종목</span>
+                )}
+                <button
+                  onClick={() => toggleRest(s.day)}
+                  className={`px-2.5 py-1 rounded-pill text-caption font-semibold transition-colors ${
+                    s.focus === '휴식'
+                      ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                      : 'bg-ink/5 text-ink-placeholder hover:bg-ink/10'
+                  }`}
+                >
+                  {s.focus === '휴식' ? '운동으로' : '휴식으로'}
+                </button>
+              </div>
             </div>
             {s.exercises.length > 0 && (
               <div className="divide-y divide-border">
@@ -239,7 +266,9 @@ export const AiProgramDetailPage = () => {
                 })}
               </div>
             )}
-            {s.focus !== '휴식' && (
+            {s.focus === '휴식' ? (
+              <div className="px-4 py-4 text-center text-caption text-ink-placeholder">충분한 휴식으로 근육을 회복하세요</div>
+            ) : (
               <button
                 onClick={() => { setAddingDay(s.day); setSearchQuery(''); setSearchCategory('전체') }}
                 className="w-full flex items-center justify-center gap-1.5 py-3 text-label font-semibold text-primary hover:bg-primary/5 transition-colors border-t border-border"
@@ -248,11 +277,9 @@ export const AiProgramDetailPage = () => {
                 운동 추가
               </button>
             )}
-            {s.exercises.length === 0 && s.focus === '휴식' && (
-              <div className="px-4 py-4 text-center text-caption text-ink-placeholder">충분한 휴식으로 근육을 회복하세요</div>
-            )}
           </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* 하단 버튼 */}
