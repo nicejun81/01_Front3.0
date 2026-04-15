@@ -81,6 +81,7 @@ export const AiProgramDetailPage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchCategory, setSearchCategory] = useState<string>('전체')
   const [toast, setToast] = useState<string | null>(null)
+  const [titleError, setTitleError] = useState(false)
 
   const savePrograms = (updated: AiProgram[]) => {
     setPrograms(updated)
@@ -179,15 +180,24 @@ export const AiProgramDetailPage = () => {
       {/* 주간 스케줄 — 항상 편집 모드 */}
       {/* 프로그램 제목 */}
       <div className="mb-5">
-        <label className="text-caption font-semibold text-ink-tertiary mb-1.5 block">프로그램 제목</label>
+        <label className="text-caption font-semibold text-ink-tertiary mb-1.5 block">프로그램 제목 <span className="text-primary">*</span></label>
         <input
           type="text"
           defaultValue={program.title || ''}
-          onBlur={e => updateTitle(e.target.value)}
+          onBlur={e => { updateTitle(e.target.value); if (e.target.value.trim()) setTitleError(false) }}
           onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur() }}
+          onChange={() => { if (titleError) setTitleError(false) }}
           placeholder="프로그램 이름을 입력하세요"
-          className="w-full px-4 py-3 bg-surface-muted rounded-card text-body font-semibold text-ink placeholder:text-ink-placeholder focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className={`w-full px-4 py-3 bg-surface-muted rounded-card text-body font-semibold text-ink placeholder:text-ink-placeholder focus:outline-none focus:ring-2 ${
+            titleError ? 'ring-2 ring-semantic-like/50 border border-semantic-like' : 'focus:ring-primary/30'
+          }`}
         />
+        {titleError && (
+          <div className="flex items-center gap-1 mt-1.5 text-semantic-like">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-current stroke-2 fill-none"><circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" /></svg>
+            <span className="text-caption font-semibold">프로그램 이름을 입력해 주세요</span>
+          </div>
+        )}
       </div>
 
       <h3 className="text-body font-bold text-ink mb-3">{days === 1 ? '오늘의 운동' : '주간 운동 스케줄'}</h3>
@@ -255,6 +265,11 @@ export const AiProgramDetailPage = () => {
         </button>
         <button
           onClick={() => {
+            if (!program.title) {
+              setTitleError(true)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+              return
+            }
             setToast('프로그램이 저장되었습니다')
             setTimeout(() => { setToast(null); navigate('/workout') }, 1200)
           }}

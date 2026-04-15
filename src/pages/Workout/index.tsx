@@ -798,71 +798,8 @@ export const WorkoutPage = () => {
   // 몸상태 체크 완료 후
   return (
     <PageLayout header={<SubPageHeader title="맞춤운동" showChat />}>
-      {/* 내 몸상태 요약 */}
-      <div className="relative rounded-card-lg overflow-hidden mb-6">
-        <img
-          src={GOALS.find(g => g.key === bodyCheck.goal)?.imageUrl || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop'}
-          alt="" className="w-full h-[180px] object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
-        <div className="absolute inset-0 flex flex-col justify-between p-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-body font-bold text-white">오늘의 몸상태</h2>
-            <button onClick={resetCheck} className="px-2.5 py-1 rounded-pill bg-white/15 text-caption text-white/80 font-semibold backdrop-blur-sm">다시 체크</button>
-          </div>
-          <div className="grid grid-cols-4 gap-1.5">
-            <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
-              <div className="text-lg mb-0.5">🎯</div>
-              <div className="text-caption text-white/60">목표</div>
-              <div className="text-label font-bold text-white">{GOALS.find(g => g.key === bodyCheck.goal)?.label}</div>
-            </div>
-            <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
-              <div className="text-lg mb-0.5">🏋️</div>
-              <div className="text-caption text-white/60">수준</div>
-              <div className="text-label font-bold text-white">{LEVELS.find(l => l.key === bodyCheck.level)?.label}</div>
-            </div>
-            <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
-              <div className="text-lg mb-0.5">{bodyCheck.painAreas.includes('없음') ? '✅' : '⚠️'}</div>
-              <div className="text-caption text-white/60">통증</div>
-              <div className="text-label font-bold text-white truncate">{bodyCheck.painAreas.includes('없음') ? '없음' : bodyCheck.painAreas.length > 2 ? `${bodyCheck.painAreas[0]} 외 ${bodyCheck.painAreas.length - 1}곳` : bodyCheck.painAreas.join('·')}</div>
-            </div>
-            <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
-              <div className="text-lg mb-0.5">📊</div>
-              <div className="text-caption text-white/60">BMI</div>
-              <div className="text-label font-bold text-white">{bodyCheck.inbody?.bmi || '-'}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 탭: AI 맞춤운동 / 커스텀 운동 */}
-      <div className="flex bg-surface-muted rounded-card p-1 mb-5">
-        <button
-          onClick={() => { setWorkoutTab('ai'); setSaved([]); localStorage.setItem(SAVED_KEY, '[]') }}
-          className={`flex-1 py-2.5 text-label font-semibold rounded-card transition-all ${
-            workoutTab === 'ai' ? 'bg-surface text-ink shadow-card' : 'text-ink-placeholder'
-          }`}
-        >
-          AI 맞춤운동
-        </button>
-        <button
-          onClick={() => { setWorkoutTab('custom'); setSaved([]); localStorage.setItem(SAVED_KEY, '[]') }}
-          className={`flex-1 py-2.5 text-label font-semibold rounded-card transition-all relative ${
-            workoutTab === 'custom' ? 'bg-surface text-ink shadow-card' : 'text-ink-placeholder'
-          }`}
-        >
-          커스텀 운동
-          {savedExercises.length > 0 && workoutTab === 'custom' && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-              {savedExercises.length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* AI 맞춤운동 탭 내용 */}
-      {workoutTab === 'ai' && (
-        <div>
+      {/* AI 맞춤운동 */}
+      <div>
           {/* 기간 선택 모드 */}
           {aiMode === 'select-period' && (
             <div>
@@ -938,14 +875,51 @@ export const WorkoutPage = () => {
           {/* 프로그램 리스트 (기본 화면) */}
           {!aiMode && (
             <div>
-              {/* 만들기 버튼 */}
-              <button
-                onClick={() => setAiMode('select-period')}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white font-bold text-body rounded-card-lg hover:bg-primary-dark transition-colors shadow-card mb-5"
-              >
-                <IconBot className="w-6 h-6 text-white stroke-white stroke-[1.5]" />
-                AI 맞춤운동 만들기
-              </button>
+              {/* 내 몸상태 요약 + 만들기 버튼 */}
+              <div className="relative rounded-card-lg overflow-hidden mb-5">
+                <img
+                  src={GOALS.find(g => g.key === bodyCheck.goal)?.imageUrl || 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=400&fit=crop'}
+                  alt="" className="w-full h-[210px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />
+                <div className="absolute inset-0 flex flex-col justify-between p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-body font-bold text-white">오늘의 몸상태</h2>
+                    <button onClick={resetCheck} className="px-3 py-1.5 rounded-pill bg-white text-caption text-ink font-bold shadow-sm hover:bg-white/90 transition-colors">다시 체크</button>
+                  </div>
+                  <div>
+                    <div className="grid grid-cols-4 gap-1.5 mb-3">
+                      <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
+                        <div className="text-lg mb-0.5">🎯</div>
+                        <div className="text-caption text-white/60">목표</div>
+                        <div className="text-label font-bold text-white">{GOALS.find(g => g.key === bodyCheck.goal)?.label}</div>
+                      </div>
+                      <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
+                        <div className="text-lg mb-0.5">🏋️</div>
+                        <div className="text-caption text-white/60">수준</div>
+                        <div className="text-label font-bold text-white">{LEVELS.find(l => l.key === bodyCheck.level)?.label}</div>
+                      </div>
+                      <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
+                        <div className="text-lg mb-0.5">{bodyCheck.painAreas.includes('없음') ? '✅' : '⚠️'}</div>
+                        <div className="text-caption text-white/60">통증</div>
+                        <div className="text-label font-bold text-white truncate">{bodyCheck.painAreas.includes('없음') ? '없음' : bodyCheck.painAreas.length > 2 ? `${bodyCheck.painAreas[0]} 외 ${bodyCheck.painAreas.length - 1}곳` : bodyCheck.painAreas.join('·')}</div>
+                      </div>
+                      <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
+                        <div className="text-lg mb-0.5">📊</div>
+                        <div className="text-caption text-white/60">BMI</div>
+                        <div className="text-label font-bold text-white">{bodyCheck.inbody?.bmi || '-'}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setAiMode('select-period')}
+                      className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white font-bold text-label rounded-card shadow-sm hover:bg-primary-dark transition-colors"
+                    >
+                      <IconBot className="w-5 h-5 text-white stroke-white stroke-[1.5]" />
+                      AI 맞춤운동 만들기
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               {/* 만든 프로그램 리스트 */}
               {aiPrograms.length > 0 ? (
@@ -960,45 +934,54 @@ export const WorkoutPage = () => {
                       const totalExercises = prog.schedule.reduce((sum, s) => sum + s.exercises.length, 0)
                       return (
                         <div key={prog.id} className="bg-surface border border-border rounded-card-lg overflow-hidden hover:border-primary/30 hover:shadow-card transition-all">
-                          <button
-                            onClick={() => nav(`/workout/${prog.id}`)}
-                            className="flex items-center gap-3 p-4 w-full text-left"
-                          >
-                            <div className="w-12 h-12 rounded-card bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <div className="flex items-center gap-3 p-4">
+                            <button onClick={() => nav(`/workout/${prog.id}`)} className="w-12 h-12 rounded-card bg-primary/10 flex items-center justify-center flex-shrink-0">
                               <IconBot className="w-7 h-7 text-primary stroke-primary stroke-[1.5]" />
-                            </div>
-                            <div className="flex-1 min-w-0">
+                            </button>
+                            <button onClick={() => nav(`/workout/${prog.id}`)} className="flex-1 min-w-0 text-left">
                               <div className="text-body font-bold text-ink truncate">{prog.title || `${prog.period} ${goalLabel} 프로그램`}</div>
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-caption text-ink-tertiary">{prog.createdAt}</span>
                                 <span className="text-caption text-ink-placeholder">·</span>
                                 <span className="text-caption text-ink-tertiary">{totalExercises}종목</span>
                               </div>
+                            </button>
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => nav(`/workout/${prog.id}`)}
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-ink-placeholder hover:text-primary hover:bg-primary/10 transition-colors"
+                                title="수정"
+                              >
+                                <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current stroke-2 fill-none">
+                                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (!confirm(`"${prog.title || `${prog.period} ${goalLabel} 프로그램`}"을 삭제하시겠습니까?`)) return
+                                  const updated = aiPrograms.filter(p => p.id !== prog.id)
+                                  setAiPrograms(updated)
+                                  localStorage.setItem(AI_PROGRAMS_KEY, JSON.stringify(updated))
+                                  setToast('프로그램이 삭제되었습니다')
+                                  setTimeout(() => setToast(null), 1500)
+                                }}
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-ink-placeholder hover:text-semantic-like hover:bg-semantic-like/10 transition-colors"
+                                title="삭제"
+                              >
+                                <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current stroke-2 fill-none">
+                                  <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                                </svg>
+                              </button>
                             </div>
-                            <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-ink-placeholder stroke-2 fill-none flex-shrink-0"><path d="M9 18l6-6-6-6" /></svg>
-                          </button>
-                          <div className="px-4 pb-3 flex gap-2">
+                          </div>
+                          <div className="px-4 pb-3">
                             <button
                               onClick={() => nav(`/workout/${prog.id}/play`)}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-primary/30 text-primary font-semibold text-label rounded-card hover:bg-primary/5 transition-colors active:scale-[0.98] shadow-sm"
+                              className="w-full flex items-center justify-center gap-1.5 py-2.5 border border-primary/30 text-primary font-semibold text-label rounded-card hover:bg-primary/5 transition-colors active:scale-[0.98] shadow-sm"
                             >
                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-primary"><path d="M8 5v14l11-7z" /></svg>
                               운동 시작하기
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (!confirm(`"${prog.title || `${prog.period} ${goalLabel} 프로그램`}"을 삭제하시겠습니까?`)) return
-                                const updated = aiPrograms.filter(p => p.id !== prog.id)
-                                setAiPrograms(updated)
-                                localStorage.setItem(AI_PROGRAMS_KEY, JSON.stringify(updated))
-                                setToast('프로그램이 삭제되었습니다')
-                                setTimeout(() => setToast(null), 1500)
-                              }}
-                              className="w-10 flex items-center justify-center py-2.5 border border-border text-ink-placeholder rounded-card hover:border-semantic-like/30 hover:text-semantic-like hover:bg-semantic-like/5 transition-colors"
-                            >
-                              <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current stroke-2 fill-none">
-                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
-                              </svg>
                             </button>
                           </div>
                         </div>
@@ -1015,11 +998,7 @@ export const WorkoutPage = () => {
               )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* 커스텀 운동 탭 내용 */}
-      {workoutTab === 'custom' && <CustomWorkoutTab saved={saved} toggleSave={toggleSave} savedExercises={savedExercises} toast={toast} setToast={setToast} />}
+      </div>
 
       {/* Toast */}
       {toast && (
