@@ -52,6 +52,7 @@ type Exercise = {
   sets: string
   reps: string
   imageUrl: string
+  description?: string
 }
 
 type InBody = {
@@ -823,7 +824,7 @@ export const WorkoutPage = () => {
             <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
               <div className="text-lg mb-0.5">{bodyCheck.painAreas.includes('없음') ? '✅' : '⚠️'}</div>
               <div className="text-caption text-white/60">통증</div>
-              <div className="text-label font-bold text-white">{bodyCheck.painAreas.includes('없음') ? '없음' : bodyCheck.painAreas.join('·')}</div>
+              <div className="text-label font-bold text-white truncate">{bodyCheck.painAreas.includes('없음') ? '없음' : bodyCheck.painAreas.length > 2 ? `${bodyCheck.painAreas[0]} 외 ${bodyCheck.painAreas.length - 1}곳` : bodyCheck.painAreas.join('·')}</div>
             </div>
             <div className="text-center bg-white/10 backdrop-blur-sm rounded-card py-2">
               <div className="text-lg mb-0.5">📊</div>
@@ -958,24 +959,49 @@ export const WorkoutPage = () => {
                       const goalLabel = GOALS.find(g => g.key === prog.goal)?.label || ''
                       const totalExercises = prog.schedule.reduce((sum, s) => sum + s.exercises.length, 0)
                       return (
-                        <button
-                          key={prog.id}
-                          onClick={() => nav(`/workout/${prog.id}`)}
-                          className="flex items-center gap-3 p-4 bg-surface border border-border rounded-card-lg text-left hover:border-primary/30 hover:shadow-card transition-all"
-                        >
-                          <div className="w-12 h-12 rounded-card bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            <IconBot className="w-7 h-7 text-primary stroke-primary stroke-[1.5]" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="text-body font-bold text-ink truncate">{prog.title || `${prog.period} ${goalLabel} 프로그램`}</div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-caption text-ink-tertiary">{prog.createdAt}</span>
-                              <span className="text-caption text-ink-placeholder">·</span>
-                              <span className="text-caption text-ink-tertiary">{totalExercises}종목</span>
+                        <div key={prog.id} className="bg-surface border border-border rounded-card-lg overflow-hidden hover:border-primary/30 hover:shadow-card transition-all">
+                          <button
+                            onClick={() => nav(`/workout/${prog.id}`)}
+                            className="flex items-center gap-3 p-4 w-full text-left"
+                          >
+                            <div className="w-12 h-12 rounded-card bg-primary/10 flex items-center justify-center flex-shrink-0">
+                              <IconBot className="w-7 h-7 text-primary stroke-primary stroke-[1.5]" />
                             </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-body font-bold text-ink truncate">{prog.title || `${prog.period} ${goalLabel} 프로그램`}</div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-caption text-ink-tertiary">{prog.createdAt}</span>
+                                <span className="text-caption text-ink-placeholder">·</span>
+                                <span className="text-caption text-ink-tertiary">{totalExercises}종목</span>
+                              </div>
+                            </div>
+                            <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-ink-placeholder stroke-2 fill-none flex-shrink-0"><path d="M9 18l6-6-6-6" /></svg>
+                          </button>
+                          <div className="px-4 pb-3 flex gap-2">
+                            <button
+                              onClick={() => nav(`/workout/${prog.id}/play`)}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 border border-primary/30 text-primary font-semibold text-label rounded-card hover:bg-primary/5 transition-colors active:scale-[0.98] shadow-sm"
+                            >
+                              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-primary"><path d="M8 5v14l11-7z" /></svg>
+                              운동 시작하기
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (!confirm(`"${prog.title || `${prog.period} ${goalLabel} 프로그램`}"을 삭제하시겠습니까?`)) return
+                                const updated = aiPrograms.filter(p => p.id !== prog.id)
+                                setAiPrograms(updated)
+                                localStorage.setItem(AI_PROGRAMS_KEY, JSON.stringify(updated))
+                                setToast('프로그램이 삭제되었습니다')
+                                setTimeout(() => setToast(null), 1500)
+                              }}
+                              className="w-10 flex items-center justify-center py-2.5 border border-border text-ink-placeholder rounded-card hover:border-semantic-like/30 hover:text-semantic-like hover:bg-semantic-like/5 transition-colors"
+                            >
+                              <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current stroke-2 fill-none">
+                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                              </svg>
+                            </button>
                           </div>
-                          <svg viewBox="0 0 24 24" className="w-5 h-5 stroke-ink-placeholder stroke-2 fill-none flex-shrink-0"><path d="M9 18l6-6-6-6" /></svg>
-                        </button>
+                        </div>
                       )
                     })}
                   </div>

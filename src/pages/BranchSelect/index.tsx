@@ -18,6 +18,7 @@ export const BranchSelectPage = () => {
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list')
   const [selectedPin, setSelectedPin] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
 
@@ -114,7 +115,34 @@ export const BranchSelectPage = () => {
     <PageLayout header={header} hideBottomNav noPadding={viewMode === 'map'}>
       {viewMode === 'list' ? (
         <div className="flex flex-col">
-          {branches.map(branch => {
+          {/* 검색 */}
+          <div className="relative py-3">
+            <svg viewBox="0 0 24 24" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 stroke-ink-placeholder stroke-2 fill-none">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="지점명 또는 주소로 검색"
+              className="w-full pl-9 pr-3 py-2.5 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-ink-disabled flex items-center justify-center"
+              >
+                <svg viewBox="0 0 24 24" className="w-3 h-3 stroke-white stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            )}
+          </div>
+          {branches.filter(branch => {
+            if (!searchQuery) return true
+            const gym = gymsData[branch.id]
+            if (!gym) return false
+            const q = searchQuery.toLowerCase()
+            return gym.name.toLowerCase().includes(q) || gym.address.toLowerCase().includes(q)
+          }).map(branch => {
             const gym = gymsData[branch.id]
             if (!gym) return null
             return (
@@ -146,6 +174,16 @@ export const BranchSelectPage = () => {
               </button>
             )
           })}
+          {searchQuery && branches.filter(branch => {
+            const gym = gymsData[branch.id]
+            if (!gym) return false
+            const q = searchQuery.toLowerCase()
+            return gym.name.toLowerCase().includes(q) || gym.address.toLowerCase().includes(q)
+          }).length === 0 && (
+            <div className="py-12 text-center">
+              <div className="text-caption text-ink-placeholder">검색 결과가 없습니다</div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="relative" style={{ height: 'calc(100vh - 105px)' }}>

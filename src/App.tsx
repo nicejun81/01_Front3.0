@@ -50,6 +50,7 @@ import {
   WalletPage,
   WorkoutPage,
   AiProgramDetailPage,
+  WorkoutPlayPage,
 } from './pages'
 import { QrScanner } from './components/QrScanner'
 
@@ -96,6 +97,7 @@ export const App = () => {
         <Route path="/reservation" element={<ReservationPage />} />
         <Route path="/workout" element={<WorkoutPage />} />
         <Route path="/workout/:id" element={<AiProgramDetailPage />} />
+        <Route path="/workout/:id/play" element={<WorkoutPlayPage />} />
         <Route path="/wallet/:type" element={<WalletPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/blocked" element={<BlockedPage />} />
