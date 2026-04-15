@@ -975,10 +975,10 @@ export const WorkoutPage = () => {
                               </button>
                             </div>
                           </div>
-                          <div className="px-4 pb-3">
+                          <div className="px-4 pb-4">
                             <button
                               onClick={() => nav(`/workout/${prog.id}/play`)}
-                              className="w-full flex items-center justify-center gap-1.5 py-2.5 border border-primary/30 text-primary font-semibold text-label rounded-card hover:bg-primary/5 transition-colors active:scale-[0.98] shadow-sm"
+                              className="w-full flex items-center justify-center gap-1.5 py-2.5 border border-primary/30 text-primary font-semibold text-label rounded-card hover:bg-primary/5 transition-colors active:scale-[0.98] shadow-[0_2px_8px_rgba(255,107,53,0.2)]"
                             >
                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-primary"><path d="M8 5v14l11-7z" /></svg>
                               운동 시작하기
