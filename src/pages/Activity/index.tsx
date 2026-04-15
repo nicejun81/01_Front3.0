@@ -1081,7 +1081,7 @@ export const ActivityPage = () => {
             <div className="text-title font-bold text-ink text-center mb-5">어떤 피드를 작성할까요?</div>
             <div className="flex flex-col gap-2">
               <button
-                onClick={() => { setFeedTypeModal(false); navigate('/feed/new?type=workout') }}
+                onClick={() => { setFeedTypeModal(false); navigate('/workout') }}
                 className="flex items-center gap-4 p-4 rounded-card-lg border border-border hover:border-primary hover:bg-primary-50 transition-colors text-left"
               >
                 <div className="w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center shrink-0">

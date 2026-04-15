@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageLayout, SubPageHeader } from '../../components'
 import { IconCheck, IconBot } from '../../components/Icons'
@@ -301,6 +301,11 @@ export const WorkoutPage = () => {
   const [aiMode, setAiMode] = useState<null | 'select-period' | 'generating'>(null)
   const [aiPeriod, setAiPeriod] = useState<string | null>(null)
   const [aiPrograms, setAiPrograms] = useState<AiProgram[]>(loadAiPrograms)
+  const [wearableModal, setWearableModal] = useState<{ progId: number } | null>(null)
+  const [wearableConnecting, setWearableConnecting] = useState(false)
+  const [wearableConnected, setWearableConnected] = useState<string | null>(null)
+  const [wearableFailed, setWearableFailed] = useState(false)
+  const wearableAttemptRef = useRef(0)
   const nav = useNavigate()
 
   const generateAiProgram = () => {
@@ -932,6 +937,9 @@ export const WorkoutPage = () => {
                     {aiPrograms.map(prog => {
                       const goalLabel = GOALS.find(g => g.key === prog.goal)?.label || ''
                       const totalExercises = prog.schedule.reduce((sum, s) => sum + s.exercises.length, 0)
+                      const todayDayName = ['일', '월', '화', '수', '목', '금', '토'][new Date().getDay()]
+                      const todaySch = prog.schedule.find(s => s.day === todayDayName && s.exercises.length > 0)
+                      const todayLabel = todaySch ? `${todaySch.day}요일 · ${todaySch.focus}` : null
                       return (
                         <div key={prog.id} className="bg-surface border border-border rounded-card-lg overflow-hidden hover:border-primary/30 hover:shadow-card transition-all">
                           <div className="flex items-center gap-3 p-4">
@@ -977,11 +985,11 @@ export const WorkoutPage = () => {
                           </div>
                           <div className="px-4 pb-4">
                             <button
-                              onClick={() => nav(`/workout/${prog.id}/play`)}
+                              onClick={() => setWearableModal({ progId: prog.id })}
                               className="w-full flex items-center justify-center gap-1.5 py-2.5 border border-primary/30 text-primary font-semibold text-label rounded-card hover:bg-primary/5 transition-colors active:scale-[0.98] shadow-[0_2px_8px_rgba(255,107,53,0.2)]"
                             >
                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-primary"><path d="M8 5v14l11-7z" /></svg>
-                              운동 시작하기
+                              {todayLabel ? `${todayLabel} 시작하기` : '오늘의 운동 시작하기'}
                             </button>
                           </div>
                         </div>
@@ -1004,6 +1012,132 @@ export const WorkoutPage = () => {
       {toast && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-5 py-3 bg-ink text-white text-label font-semibold rounded-pill shadow-elevated z-50 animate-slide-up">
           {toast}
+        </div>
+      )}
+
+      {/* 웨어러블 연결 모달 */}
+      {wearableModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-8" onClick={() => { if (!wearableConnecting) setWearableModal(null) }}>
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="relative w-full max-w-sm bg-surface rounded-card-lg p-6 shadow-elevated" onClick={e => e.stopPropagation()}>
+            {wearableConnected ? (
+              <div className="flex flex-col items-center py-4">
+                <div className="w-14 h-14 rounded-full bg-accent-green/10 flex items-center justify-center mb-3">
+                  <svg viewBox="0 0 24 24" className="w-7 h-7 stroke-accent-green stroke-[2.5] fill-none"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+                <div className="text-label font-bold text-ink mb-1">{wearableConnected} 연결 완료</div>
+                <div className="text-caption text-ink-tertiary mb-3">운동 데이터가 자동으로 기록됩니다</div>
+                <div className="w-full px-4 py-3 bg-accent-purple/5 border border-accent-purple/20 rounded-card mb-5">
+                  <div className="flex items-center gap-2 text-caption text-accent-purple font-semibold">
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-accent-purple stroke-2 fill-none flex-shrink-0"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
+                    {wearableConnected}에서 바디채널 앱을 실행해 주세요
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setWearableConnected(null); setWearableModal(null); nav(`/workout/${wearableModal!.progId}/play`) }}
+                  className="w-full py-3 bg-primary text-white font-semibold text-label rounded-card hover:bg-primary-dark transition-colors"
+                >
+                  운동 시작하기
+                </button>
+              </div>
+            ) : wearableFailed ? (
+              <div className="flex flex-col items-center py-4">
+                <div className="w-14 h-14 rounded-full bg-semantic-like/10 flex items-center justify-center mb-3">
+                  <svg viewBox="0 0 24 24" className="w-7 h-7 stroke-semantic-like stroke-[2] fill-none">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v4M12 16h.01" />
+                  </svg>
+                </div>
+                <div className="text-label font-bold text-ink mb-1">연결에 실패했습니다</div>
+                <div className="text-caption text-ink-tertiary mb-5">디바이스가 근처에 있는지 확인해 주세요</div>
+                <div className="flex gap-2 w-full">
+                  <button
+                    onClick={() => { setWearableFailed(false) }}
+                    className="flex-1 py-3 bg-primary text-white font-semibold text-label rounded-card hover:bg-primary-dark transition-colors"
+                  >
+                    다시 연결하기
+                  </button>
+                  <button
+                    onClick={() => { setWearableFailed(false); setWearableModal(null); nav(`/workout/${wearableModal!.progId}/play`) }}
+                    className="flex-1 py-3 bg-surface-muted text-ink font-semibold text-label rounded-card hover:bg-ink-disabled transition-colors"
+                  >
+                    건너뛰기
+                  </button>
+                </div>
+              </div>
+            ) : wearableConnecting ? (
+              <div className="flex flex-col items-center py-4">
+                <div className="relative w-14 h-14 mb-3">
+                  <div className="absolute inset-0 rounded-full border-[3px] border-accent-purple/20" />
+                  <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-accent-purple animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 stroke-accent-purple stroke-[1.5] fill-none">
+                      <rect x="6" y="2" width="12" height="20" rx="4" />
+                      <path d="M12 18h.01" />
+                      <path d="M9 6h6" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-label font-bold text-ink mb-1">연결 중입니다...</div>
+                <div className="text-caption text-ink-tertiary">디바이스를 검색하고 있습니다</div>
+              </div>
+            ) : (
+              <>
+                <div className="text-center mb-5">
+                  <div className="w-12 h-12 rounded-full bg-accent-purple/10 flex items-center justify-center mx-auto mb-3">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 stroke-accent-purple stroke-[1.5] fill-none">
+                      <rect x="6" y="2" width="12" height="20" rx="4" />
+                      <path d="M12 18h.01" />
+                      <path d="M9 6h6" />
+                    </svg>
+                  </div>
+                  <div className="text-body font-bold text-ink mb-1">웨어러블을 연결할까요?</div>
+                  <p className="text-caption text-ink-tertiary">심박·칼로리 등 운동 데이터를 자동 기록합니다</p>
+                </div>
+                <div className="flex flex-col gap-2 mb-3">
+                  {(['Apple Watch', 'Galaxy Watch', 'Garmin'] as const).map(device => (
+                    <button
+                      key={device}
+                      onClick={() => {
+                        setWearableConnecting(true)
+                        wearableAttemptRef.current += 1
+                        const attempt = wearableAttemptRef.current
+                        setTimeout(() => {
+                          setWearableConnecting(false)
+                          if (attempt === 1) {
+                            setWearableFailed(true)
+                          } else {
+                            setWearableConnected(device)
+                            localStorage.setItem('connected-wearable', device)
+                          }
+                        }, 2000)
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 border border-border rounded-card-lg text-left hover:border-accent-purple hover:bg-accent-purple/5 transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center flex-shrink-0">
+                        <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-ink-tertiary stroke-[1.5] fill-none">
+                          <rect x="6" y="2" width="12" height="20" rx="4" />
+                          <path d="M12 18h.01" />
+                          <path d="M9 6h6" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-label font-semibold text-ink">{device}</div>
+                        <div className="text-caption text-ink-placeholder">터치하여 연결</div>
+                      </div>
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-ink-placeholder stroke-2 fill-none"><path d="M9 18l6-6-6-6" /></svg>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => { setWearableModal(null); nav(`/workout/${wearableModal.progId}/play`) }}
+                  className="w-full py-3 text-label font-semibold text-ink-tertiary hover:text-ink transition-colors text-center"
+                >
+                  연결 없이 시작하기
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
 

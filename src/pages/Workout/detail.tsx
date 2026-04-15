@@ -82,6 +82,8 @@ export const AiProgramDetailPage = () => {
   const [searchCategory, setSearchCategory] = useState<string>('전체')
   const [toast, setToast] = useState<string | null>(null)
   const [titleError, setTitleError] = useState(false)
+  const todayDay = ['일', '월', '화', '수', '목', '금', '토'][new Date().getDay()]
+  const [openDay, setOpenDay] = useState<string | null>(todayDay)
 
   const savePrograms = (updated: AiProgram[]) => {
     setPrograms(updated)
@@ -212,13 +214,17 @@ export const AiProgramDetailPage = () => {
       </div>
 
       <h3 className="text-body font-bold text-ink mb-3">{days === 1 ? '오늘의 운동' : '주간 운동 스케줄'}</h3>
-      <div className="flex flex-col gap-3 mb-6">
+      <div className="flex flex-col gap-2 mb-6">
         {program.schedule.map(s => {
-          const todayDay = ['일', '월', '화', '수', '목', '금', '토'][new Date().getDay()]
           const isToday = s.day === todayDay
+          const isOpen = openDay === s.day
           return (
-          <div key={s.day} className={`border rounded-card-lg overflow-hidden ${isToday ? 'border-primary border-2' : 'border-border'}`}>
-            <div className={`flex items-center justify-between px-4 py-2.5 ${s.focus === '휴식' ? 'bg-surface-muted' : s.exercises.length > 0 ? 'bg-primary/5' : 'bg-surface-muted'}`}>
+          <div key={s.day} className={`border rounded-card-lg overflow-hidden transition-all ${isToday ? 'border-primary border-2' : 'border-border'}`}>
+            {/* 요일 헤더 — 클릭하면 접기/펼치기 */}
+            <button
+              onClick={() => setOpenDay(isOpen ? null : s.day)}
+              className={`flex items-center justify-between px-4 py-2.5 w-full text-left transition-colors ${s.focus === '휴식' ? 'bg-surface-muted' : s.exercises.length > 0 ? 'bg-primary/5' : 'bg-surface-muted'}`}
+            >
               <div className="flex items-center gap-2">
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-caption font-bold ${
                   s.focus === '휴식' ? 'bg-ink-disabled text-ink-placeholder' : s.exercises.length > 0 ? 'bg-primary text-white' : 'bg-primary/30 text-white'
@@ -230,52 +236,69 @@ export const AiProgramDetailPage = () => {
                 {s.exercises.length > 0 && (
                   <span className="text-caption text-ink-tertiary">{s.exercises.length}종목</span>
                 )}
-                <button
-                  onClick={() => toggleRest(s.day)}
-                  className={`px-2.5 py-1 rounded-pill text-caption font-semibold transition-colors ${
-                    s.focus === '휴식'
-                      ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                      : 'bg-ink/5 text-ink-placeholder hover:bg-ink/10'
-                  }`}
-                >
-                  {s.focus === '휴식' ? '운동으로' : '휴식으로'}
-                </button>
+                {s.focus === '휴식' && <span className="text-caption text-ink-placeholder">휴식</span>}
+                <svg viewBox="0 0 24 24" className={`w-4 h-4 stroke-ink-placeholder stroke-2 fill-none transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
               </div>
-            </div>
-            {s.exercises.length > 0 && (
-              <div className="divide-y divide-border">
-                {s.exercises.map(ex => {
-                  const fullEx = ALL_EXERCISES.find(e => e.id === ex.id) || ex
-                  return (
-                    <div key={ex.id} className="flex items-center gap-3 px-4 py-2.5">
-                      <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => setViewingEx(fullEx)}>
-                        <img src={ex.imageUrl} alt={ex.name} className="w-10 h-10 rounded-card object-cover flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="text-label font-semibold text-ink truncate">{ex.name}</div>
-                          <div className="text-caption text-ink-tertiary">{ex.muscle}</div>
+            </button>
+
+            {/* 펼친 내용 */}
+            {isOpen && (
+              <>
+                {s.exercises.length > 0 && (
+                  <div className="divide-y divide-border">
+                    {s.exercises.map(ex => {
+                      const fullEx = ALL_EXERCISES.find(e => e.id === ex.id) || ex
+                      return (
+                        <div key={ex.id} className="flex items-center gap-3 px-4 py-2.5">
+                          <div className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer" onClick={() => setViewingEx(fullEx)}>
+                            <img src={ex.imageUrl} alt={ex.name} className="w-10 h-10 rounded-card object-cover flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="text-label font-semibold text-ink truncate">{ex.name}</div>
+                              <div className="text-caption text-ink-tertiary">{ex.muscle}</div>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeExercise(s.day, ex.id)}
+                            className="w-7 h-7 rounded-full bg-semantic-like/10 flex items-center justify-center flex-shrink-0 hover:bg-semantic-like/20"
+                          >
+                            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-semantic-like stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                          </button>
                         </div>
-                      </div>
-                      <button
-                        onClick={() => removeExercise(s.day, ex.id)}
-                        className="w-7 h-7 rounded-full bg-semantic-like/10 flex items-center justify-center flex-shrink-0 hover:bg-semantic-like/20"
-                      >
-                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-semantic-like stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                      </button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-            {s.focus === '휴식' ? (
-              <div className="px-4 py-4 text-center text-caption text-ink-placeholder">충분한 휴식으로 근육을 회복하세요</div>
-            ) : (
-              <button
-                onClick={() => { setAddingDay(s.day); setSearchQuery(''); setSearchCategory('전체') }}
-                className="w-full flex items-center justify-center gap-1.5 py-3 text-label font-semibold text-primary hover:bg-primary/5 transition-colors border-t border-border"
-              >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-primary stroke-2 fill-none"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                운동 추가
-              </button>
+                      )
+                    })}
+                  </div>
+                )}
+                {s.focus === '휴식' ? (
+                  <div className="px-4 py-4 flex items-center justify-between">
+                    <span className="text-caption text-ink-placeholder">충분한 휴식으로 근육을 회복하세요</span>
+                    <button
+                      onClick={e => { e.stopPropagation(); toggleRest(s.day) }}
+                      className="px-2.5 py-1 rounded-pill text-caption font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                    >
+                      운동으로 변경
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center border-t border-border">
+                    <button
+                      onClick={() => { setAddingDay(s.day); setSearchQuery(''); setSearchCategory('전체') }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3 text-label font-semibold text-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-primary stroke-2 fill-none"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                      운동 추가
+                    </button>
+                    <div className="w-px h-5 bg-border" />
+                    <button
+                      onClick={e => { e.stopPropagation(); toggleRest(s.day) }}
+                      className="px-4 py-3 text-caption font-semibold text-ink-placeholder hover:text-ink-tertiary transition-colors"
+                    >
+                      휴식으로
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
           )

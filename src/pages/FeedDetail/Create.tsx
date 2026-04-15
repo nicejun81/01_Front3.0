@@ -7,7 +7,6 @@ type WorkoutSet = { weight: string; reps: string }
 type WorkoutExercise = { name: string; sets: WorkoutSet[] }
 const WORKOUT_STEPS = [
   { num: 1, label: '사진 · 내용' },
-  { num: 2, label: '운동기록' },
 ] as const
 
 const RUNNING_STEPS = [
@@ -33,7 +32,7 @@ export const FeedCreatePage = () => {
   const feedType = searchParams.get('type') || 'general'
   const isWorkout = feedType === 'workout'
   const isRunning = feedType === 'running'
-  const hasStep2 = isWorkout || isRunning
+  const hasStep2 = isRunning
   const STEPS = isRunning ? RUNNING_STEPS : WORKOUT_STEPS
 
   const [step, setStep] = useState<1 | 2>(1)
@@ -364,7 +363,7 @@ export const FeedCreatePage = () => {
       )}
 
       {/* ─── STEP 2: 운동기록 / 러닝기록 ─── */}
-      {step === 2 && (isWorkout || isRunning) && (
+      {step === 2 && isRunning && (
         <div className="flex flex-col flex-1">
           {isWorkout && <section className="bg-surface px-page py-4">
             <SectionTitle label="종목" />
@@ -526,6 +525,22 @@ export const FeedCreatePage = () => {
                   </div>
                 </div>
               </div>
+            ) : connecting ? (
+              <div className="p-6 rounded-card-lg border border-accent-purple/30 bg-accent-purple/5 flex flex-col items-center">
+                <div className="relative w-14 h-14 mb-3">
+                  <div className="absolute inset-0 rounded-full border-[3px] border-accent-purple/20" />
+                  <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-accent-purple animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-6 h-6 stroke-accent-purple stroke-[1.5] fill-none">
+                      <rect x="6" y="2" width="12" height="20" rx="4" />
+                      <path d="M12 18h.01" />
+                      <path d="M9 6h6" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-label font-bold text-ink mb-1">연결 중입니다...</div>
+                <div className="text-caption text-ink-tertiary">디바이스에서 데이터를 불러오고 있습니다</div>
+              </div>
             ) : (
               <>
                 <div className="grid grid-cols-3 gap-2">
@@ -533,11 +548,10 @@ export const FeedCreatePage = () => {
                     <button
                       key={d}
                       type="button"
-                      disabled={connecting}
                       onClick={() => connectWearable(d)}
-                      className="py-3 border border-border rounded-card text-label font-semibold text-ink hover:border-accent-purple hover:text-accent-purple disabled:opacity-60"
+                      className="py-3 border border-border rounded-card text-label font-semibold text-ink hover:border-accent-purple hover:text-accent-purple transition-colors"
                     >
-                      {connecting ? '연결중…' : d}
+                      {d}
                     </button>
                   ))}
                 </div>
