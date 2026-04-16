@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageLayout, SubPageHeader } from '../../components'
 import { IconCheck, IconBot } from '../../components/Icons'
@@ -119,14 +119,9 @@ type AiProgram = {
   schedule: { day: string; focus: string; exercises: Exercise[] }[]
 }
 
-const SAVED_KEY = 'saved-workouts'
 const BODY_CHECK_KEY = 'body-check'
 const AI_PROGRAMS_KEY = 'ai-programs'
 
-const loadSaved = (): number[] => {
-  try { return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]') }
-  catch { return [] }
-}
 const loadBodyCheck = (): BodyCheck | null => {
   try { return JSON.parse(localStorage.getItem(BODY_CHECK_KEY) || 'null') }
   catch { return null }
@@ -134,149 +129,6 @@ const loadBodyCheck = (): BodyCheck | null => {
 const loadAiPrograms = (): AiProgram[] => {
   try { return JSON.parse(localStorage.getItem(AI_PROGRAMS_KEY) || '[]') }
   catch { return [] }
-}
-
-const CATEGORIES = ['전체', '가슴', '등', '어깨', '하체', '팔', '코어', '유산소'] as const
-
-const _CustomWorkoutTab = ({ saved, toggleSave, savedExercises, toast: _toast, setToast: _setToast }: {
-  saved: number[]
-  toggleSave: (ex: Exercise) => void
-  savedExercises: Exercise[]
-  toast: string | null
-  setToast: (v: string | null) => void
-}) => {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchCategory, setSearchCategory] = useState<string>('전체')
-
-  const filteredExercises = useMemo(() => {
-    return ALL_EXERCISES
-      .filter(e => searchCategory === '전체' || e.category === searchCategory)
-      .filter(e => {
-        if (!searchQuery) return true
-        const q = searchQuery.toLowerCase()
-        return e.name.toLowerCase().includes(q) || e.muscle.toLowerCase().includes(q) || e.category.toLowerCase().includes(q)
-      })
-  }, [searchQuery, searchCategory])
-
-  return (
-    <>
-      {/* 내 운동 리스트 */}
-      {savedExercises.length > 0 && (
-        <div className="flex flex-col gap-2 pb-4">
-          <h3 className="text-body font-bold text-ink">내 운동 리스트</h3>
-          {savedExercises.map((ex, i) => (
-            <div key={ex.id} className="flex items-center gap-3 p-3 bg-surface border border-border rounded-card-lg">
-              <span className="w-7 h-7 rounded-full bg-primary text-white text-caption font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
-              <img src={ex.imageUrl} alt={ex.name} className="w-12 h-12 rounded-card object-cover flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-body font-bold text-ink truncate">{ex.name}</span>
-                  <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-caption font-semibold rounded">{ex.category}</span>
-                </div>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-caption text-ink-secondary">{ex.muscle}</span>
-                  <span className="text-caption text-ink-placeholder">·</span>
-                  <span className="text-caption text-ink-tertiary">{ex.sets !== '-' ? `${ex.sets}세트 × ${ex.reps}` : ex.reps}</span>
-                </div>
-              </div>
-              <button
-                onClick={() => toggleSave(ex)}
-                className="w-8 h-8 rounded-full bg-semantic-like/10 flex items-center justify-center flex-shrink-0 hover:bg-semantic-like/20"
-              >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-semantic-like stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-              </button>
-            </div>
-          ))}
-          <div className="mt-1 p-4 bg-surface-muted rounded-card-lg text-center">
-            <div className="text-body font-bold text-ink mb-1">총 {savedExercises.length}개 운동</div>
-            <div className="text-caption text-ink-tertiary">
-              예상 소요시간 약 {Math.round(savedExercises.reduce((acc, ex) => acc + (ex.sets !== '-' ? Number(ex.sets) * 2.5 : 20), 0))}분
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 운동 검색 & 목록 */}
-      <div className="mt-2">
-        <h3 className="text-body font-bold text-ink mb-3">운동 검색</h3>
-
-        {/* 검색바 */}
-        <div className="relative mb-3">
-          <svg viewBox="0 0 24 24" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 stroke-ink-placeholder stroke-2 fill-none">
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="운동 이름, 부위, 근육으로 검색"
-            className="w-full pl-9 pr-3 py-2.5 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder focus:outline-none focus:ring-2 focus:ring-primary/30"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-ink-disabled flex items-center justify-center"
-            >
-              <svg viewBox="0 0 24 24" className="w-3 h-3 stroke-white stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-            </button>
-          )}
-        </div>
-
-        {/* 카테고리 필터 */}
-        <div className="flex gap-1.5 overflow-x-auto pb-3 scrollbar-hide">
-          {CATEGORIES.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSearchCategory(cat)}
-              className={`px-3 py-1.5 rounded-pill text-caption font-semibold whitespace-nowrap transition-colors ${
-                searchCategory === cat ? 'bg-primary text-white' : 'bg-surface-muted text-ink-tertiary hover:text-ink'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* 운동 목록 */}
-        <div className="flex flex-col gap-1.5">
-          {filteredExercises.length > 0 ? filteredExercises.map(ex => {
-            const isSaved = saved.includes(ex.id)
-            return (
-              <button
-                key={ex.id}
-                onClick={() => toggleSave(ex)}
-                className={`flex items-center gap-3 p-3 rounded-card-lg border transition-all text-left ${
-                  isSaved ? 'border-primary/30 bg-primary/5' : 'border-border bg-surface hover:border-ink-disabled'
-                }`}
-              >
-                <img src={ex.imageUrl} alt={ex.name} className="w-12 h-12 rounded-card object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-label font-semibold text-ink truncate">{ex.name}</span>
-                    <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-caption font-semibold rounded">{ex.category}</span>
-                  </div>
-                  <div className="text-caption text-ink-tertiary mt-0.5">{ex.muscle} · {ex.sets !== '-' ? `${ex.sets}세트 × ${ex.reps}` : ex.reps}</div>
-                </div>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
-                  isSaved ? 'bg-primary' : 'bg-surface-muted'
-                }`}>
-                  {isSaved ? (
-                    <IconCheck className="w-4 h-4 stroke-white stroke-[2.5]" />
-                  ) : (
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-ink-placeholder stroke-2 fill-none"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                  )}
-                </div>
-              </button>
-            )
-          }) : (
-            <div className="py-8 text-center">
-              <div className="text-caption text-ink-placeholder">검색 결과가 없습니다</div>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  )
 }
 
 export const WorkoutPage = () => {
@@ -293,8 +145,6 @@ export const WorkoutPage = () => {
   const [mode, setMode] = useState<null | 'confirm' | 'custom'>(null)
 
   // workout state
-  const [_workoutTab, _setWorkoutTab] = useState<'ai' | 'custom'>('ai')
-  const [saved, setSaved] = useState<number[]>(loadSaved)
   const [toast, setToast] = useState<string | null>(null)
 
   // AI 맞춤운동 state
@@ -371,18 +221,6 @@ export const WorkoutPage = () => {
     setLevel('')
     setInbody({ height: '', weight: '', muscleMass: '', bodyFat: '', bodyWater: '', basalMetab: '', visceralFat: '', bmi: '' })
   }
-
-  const _toggleSave = (ex: Exercise) => {
-    setSaved(prev => {
-      const next = prev.includes(ex.id) ? prev.filter(id => id !== ex.id) : [...prev, ex.id]
-      localStorage.setItem(SAVED_KEY, JSON.stringify(next))
-      setToast(prev.includes(ex.id) ? `${ex.name} 제거됨` : `${ex.name} 저장됨`)
-      setTimeout(() => setToast(null), 1500)
-      return next
-    })
-  }
-
-  const _savedExercises = ALL_EXERCISES.filter(e => saved.includes(e.id))
 
   // 몸상태 체크 전
   if (!bodyCheck) {
