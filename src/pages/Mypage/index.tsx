@@ -10,6 +10,8 @@ import {
   IconInfo,
   IconSettings,
   IconUser,
+  IconUserPlus,
+  IconStar,
 } from '../../components/Icons'
 
 /* ── 프로필 탭 데이터 (인스타그램 스타일) ── */
@@ -128,7 +130,6 @@ const statusBadgeStyles: Record<string, string> = {
 export const MyPage = () => {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [showPurchase, setShowPurchase] = useState(searchParams.get('tab') === 'purchase')
   const [activeTab, setActiveTab] = useState<'profile' | 'my'>(searchParams.get('tab') === 'profile' ? 'profile' : 'my')
   const [profileGrid, setProfileGrid] = useState<'grid' | 'tagged'>('grid')
   const [membershipTab, setMembershipTab] = useState<typeof MEMBERSHIP_TABS[number]>('이용중')
@@ -270,15 +271,26 @@ export const MyPage = () => {
               const yr = now.getFullYear(), mo = now.getMonth(), td = now.getDate()
               const first = new Date(yr, mo, 1).getDay()
               const dim = new Date(yr, mo + 1, 0).getDate()
-              const workoutDays = new Set([1,3,5,7,8,10,12,14,15,17,19,21,22,24,26,28])
-              const details: Record<number, { ex: number; dur: string; vol: string }> = {
-                1:{ex:5,dur:'1시간 20분',vol:'8,420kg'},3:{ex:4,dur:'55분',vol:'맨몸'},5:{ex:6,dur:'1시간 45분',vol:'12,680kg'},
-                7:{ex:5,dur:'50분',vol:'3,240kg'},8:{ex:3,dur:'40분',vol:'맨몸'},10:{ex:5,dur:'1시간 10분',vol:'7,200kg'},
-                12:{ex:4,dur:'1시간',vol:'5,600kg'},14:{ex:6,dur:'1시간 30분',vol:'10,400kg'},15:{ex:3,dur:'45분',vol:'맨몸'},
-                17:{ex:5,dur:'1시간 15분',vol:'9,100kg'},19:{ex:4,dur:'55분',vol:'4,800kg'},21:{ex:5,dur:'1시간 20분',vol:'8,200kg'},
-                22:{ex:3,dur:'40분',vol:'맨몸'},24:{ex:6,dur:'1시간 40분',vol:'11,600kg'},26:{ex:4,dur:'1시간',vol:'6,400kg'},
-                28:{ex:5,dur:'1시간 10분',vol:'7,800kg'},
-              }
+
+              // localStorage에서 실제 운동 기록 읽기
+              const rawHistory: { date: string; programTitle?: string; elapsed: number; totalVolume: number; totalSets: number; estCalories: number; focus: string; exercises: { name: string; category: string; sets: { weight: string; reps: string }[] }[] }[] = JSON.parse(localStorage.getItem('workout-history') || '[]')
+
+              // 이번 달 기록만 필터 → 날짜(day) 기준으로 매핑
+              const workoutDays = new Set<number>()
+              const details: Record<number, { ex: number; dur: string; vol: string }> = {}
+              rawHistory.forEach(rec => {
+                const d = new Date(rec.date)
+                if (d.getFullYear() === yr && d.getMonth() === mo) {
+                  const day = d.getDate()
+                  workoutDays.add(day)
+                  if (!details[day]) {
+                    const mins = Math.floor((rec.elapsed || 0) / 60)
+                    const durStr = mins >= 60 ? `${Math.floor(mins/60)}시간 ${mins%60 ? mins%60+'분' : ''}`.trim() : `${mins}분`
+                    const volStr = rec.totalVolume > 0 ? `${rec.totalVolume.toLocaleString()}kg` : '맨몸'
+                    details[day] = { ex: rec.exercises?.length || 0, dur: durStr, vol: volStr }
+                  }
+                }
+              })
               const wk = ['일','월','화','수','목','금','토']
               const cells: (number|null)[] = Array(first).fill(null)
               for (let d=1;d<=dim;d++) cells.push(d)
@@ -325,7 +337,9 @@ export const MyPage = () => {
                   {/* 최근 기록 */}
                   <div className="text-label font-bold text-ink mb-2">최근 운동기록</div>
                   <div className="flex flex-col gap-2">
-                    {[...workoutDays].filter(d=>d<=td).sort((a,b)=>b-a).slice(0,5).map(d=>{
+                    {[...workoutDays].filter(d=>d<=td).sort((a,b)=>b-a).slice(0,5).length === 0 ? (
+                      <div className="py-6 text-center text-caption text-ink-placeholder">이번 달 운동 기록이 없습니다</div>
+                    ) : [...workoutDays].filter(d=>d<=td).sort((a,b)=>b-a).slice(0,5).map(d=>{
                       const dt = details[d]
                       if(!dt) return null
                       return (
@@ -351,35 +365,101 @@ export const MyPage = () => {
         </>
       ) : (
         /* ── 마이 탭 ── */
-        <div className="px-page py-4">
-          {/* 프로필 요약 */}
-          <div className="flex items-center gap-4 mb-section">
-            <div className="w-14 h-14 bg-surface-muted rounded-full flex items-center justify-center flex-shrink-0 border-2 border-primary">
-              <IconUser className="w-7 h-7 stroke-ink-placeholder stroke-[1.5]" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-body font-bold text-ink">김피트</h2>
-              <p className="text-caption text-ink-tertiary">fitkim@email.com</p>
-            </div>
-          </div>
-
-          {/* 캐시/포인트/쿠폰 */}
-          <div className="grid grid-cols-3 gap-2 mb-section">
-            {[
-              { value: '15,000', label: '캐시', href: '/wallet/cash' },
-              { value: '2,500', label: '포인트', href: '/wallet/point' },
-              { value: '3', label: '쿠폰', href: '/wallet/coupon' },
-            ].map((stat) => (
-              <button key={stat.label} onClick={() => navigate(stat.href)} className="bg-surface-muted rounded-card p-3 text-center hover:bg-border-light transition-colors">
-                <div className="text-title font-bold text-primary">{stat.value}</div>
-                <div className="text-caption text-ink-secondary">{stat.label}</div>
+        <div>
+          {/* 프로필 + 자산 */}
+          <div className="px-page pt-5 pb-5">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="w-14 h-14 bg-surface-muted rounded-full flex items-center justify-center flex-shrink-0">
+                <IconUser className="w-7 h-7 stroke-ink-placeholder stroke-[1.5]" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-body font-bold text-ink">김피트</h2>
+                <p className="text-caption text-ink-tertiary">fitkim@email.com</p>
+              </div>
+              <button onClick={() => navigate('/mypage/edit')} className="px-3.5 py-1.5 text-caption font-semibold text-ink-secondary border border-border rounded-pill hover:bg-surface-muted transition-colors">
+                편집
               </button>
-            ))}
+            </div>
+            <div className="flex items-center bg-surface-muted rounded-card-lg divide-x divide-border">
+              {[
+                { value: '15,000', label: '캐시', href: '/wallet/cash' },
+                { value: '2,500', label: '포인트', href: '/wallet/point' },
+                { value: '3', label: '쿠폰', href: '/wallet/coupon' },
+              ].map((stat) => (
+                <button key={stat.label} onClick={() => navigate(stat.href)} className="flex-1 py-3.5 text-center hover:bg-border-light transition-colors first:rounded-l-card-lg last:rounded-r-card-lg">
+                  <div className="text-body font-bold text-ink tabular-nums">{stat.value}</div>
+                  <div className="text-caption text-ink-tertiary mt-0.5">{stat.label}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="h-2 bg-surface-muted -mx-page" />
+          <div className="h-[6px] bg-surface-muted" />
 
-          {/* 내 예약 - 예약 있는 날짜만 탭 표시 */}
+          {/* 내 회원권 */}
+          <div className="px-page py-section">
+            <h3 className="text-body font-bold text-ink mb-3">내 회원권</h3>
+
+            {/* 탭 필터 */}
+            <div className="flex bg-surface-muted rounded-card p-1 mb-4">
+              {MEMBERSHIP_TABS.map((tab) => {
+                const count = memberships.filter(m => m.tab === tab).length
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setMembershipTab(tab)}
+                    className={`flex-1 py-2 text-label font-semibold rounded-card transition-all ${
+                      membershipTab === tab
+                        ? 'bg-surface text-ink shadow-card'
+                        : 'text-ink-placeholder'
+                    }`}
+                  >
+                    {tab} <span className={`ml-0.5 ${membershipTab === tab ? 'text-primary' : ''}`}>{count}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* 회원권 리스트 */}
+            <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar">
+              {memberships.filter(m => m.tab === membershipTab).map((membership) => (
+                <div
+                  key={membership.id}
+                  className={`min-w-[240px] flex-shrink-0 rounded-card p-card-lg cursor-pointer transition-transform hover:-translate-y-0.5 ${statusStyles[membership.status]}`}
+                >
+                  <span className={`badge mb-2 inline-block ${statusBadgeStyles[membership.status]}`}>
+                    {membership.statusLabel}
+                  </span>
+                  <div className="text-body font-bold mb-0.5">{membership.name}</div>
+                  <div className={`text-caption mb-3 ${membership.status === 'active' ? 'opacity-60' : 'text-ink-placeholder'}`}>
+                    {membership.gym}
+                  </div>
+                  <div className="flex gap-4">
+                    {membership.info.map((item) => (
+                      <div key={item.label} className="flex flex-col">
+                        <span className={`text-caption mb-0.5 ${membership.status === 'active' ? 'opacity-60' : 'text-ink-placeholder'}`}>
+                          {item.label}
+                        </span>
+                        <span className={`text-label font-bold ${membership.status === 'expired' ? 'text-ink-secondary' : ''}`}>
+                          {item.value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {memberships.filter(m => m.tab === membershipTab).length === 0 && (
+                <div className="py-8 text-center text-label text-ink-placeholder">
+                  해당하는 회원권이 없습니다
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="h-[6px] bg-surface-muted" />
+
+          {/* 내 예약 */}
+          <div className="px-page">
           {(() => {
             const dayNames = ['일', '월', '화', '수', '목', '금', '토']
             // 예약에서 고유 날짜 추출 (과거 포함)
@@ -498,108 +578,81 @@ export const MyPage = () => {
               </div>
             )
           })()}
-
-          <div className="h-2 bg-surface-muted -mx-page" />
-
-          {/* 내 회원권 */}
-          <div className="py-section">
-            <h3 className="text-body font-bold text-ink mb-3">내 회원권</h3>
-
-            {/* 탭 필터 */}
-            <div className="flex bg-surface-muted rounded-card p-1 mb-4">
-              {MEMBERSHIP_TABS.map((tab) => {
-                const count = memberships.filter(m => m.tab === tab).length
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setMembershipTab(tab)}
-                    className={`flex-1 py-2 text-label font-semibold rounded-card transition-all ${
-                      membershipTab === tab
-                        ? 'bg-surface text-ink shadow-card'
-                        : 'text-ink-placeholder'
-                    }`}
-                  >
-                    {tab} <span className={`ml-0.5 ${membershipTab === tab ? 'text-primary' : ''}`}>{count}</span>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* 회원권 리스트 */}
-            <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar">
-              {memberships.filter(m => m.tab === membershipTab).map((membership) => (
-                <div
-                  key={membership.id}
-                  className={`min-w-[240px] flex-shrink-0 rounded-card p-card-lg cursor-pointer transition-transform hover:-translate-y-0.5 ${statusStyles[membership.status]}`}
-                >
-                  <span className={`badge mb-2 inline-block ${statusBadgeStyles[membership.status]}`}>
-                    {membership.statusLabel}
-                  </span>
-                  <div className="text-body font-bold mb-0.5">{membership.name}</div>
-                  <div className={`text-caption mb-3 ${membership.status === 'active' ? 'opacity-60' : 'text-ink-placeholder'}`}>
-                    {membership.gym}
-                  </div>
-                  <div className="flex gap-4">
-                    {membership.info.map((item) => (
-                      <div key={item.label} className="flex flex-col">
-                        <span className={`text-caption mb-0.5 ${membership.status === 'active' ? 'opacity-60' : 'text-ink-placeholder'}`}>
-                          {item.label}
-                        </span>
-                        <span className={`text-label font-bold ${membership.status === 'expired' ? 'text-ink-secondary' : ''}`}>
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {memberships.filter(m => m.tab === membershipTab).length === 0 && (
-                <div className="py-8 text-center text-label text-ink-placeholder">
-                  해당하는 회원권이 없습니다
-                </div>
-              )}
-            </div>
           </div>
 
-          <div className="h-2 bg-surface-muted -mx-page" />
+          <div className="h-[6px] bg-surface-muted" />
 
           {/* 내가 참여한 모임 */}
-          <div className="py-section">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-body font-bold text-ink">내가 참여한 모임</h3>
-              <button onClick={() => navigate('/activity')} className="text-label text-ink-tertiary">전체보기</button>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar">
-              {myMeetups.map((m) => (
-                <button
-                  key={m.id}
-                  onClick={() => navigate(`/meetup/${m.id}`)}
-                  className="min-w-[220px] flex-shrink-0 text-left bg-surface rounded-card-lg shadow-card overflow-hidden"
-                >
-                  <div className="relative">
-                    <img src={m.imageUrl} alt={m.title} className="w-full h-[110px] object-cover" />
-                    <span className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-white text-caption font-bold rounded">
-                      {m.role}
-                    </span>
-                  </div>
-                  <div className="p-card">
-                    <div className="text-caption text-ink-tertiary mb-0.5">{m.category}</div>
-                    <div className="text-body font-bold text-ink truncate">{m.title}</div>
-                    <div className="text-label text-ink-secondary mt-1">{m.schedule}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
+          <div className="px-page">
+            <button
+              onClick={() => navigate('/activity')}
+              className="w-full flex justify-between items-center py-4 border-b border-border-light hover:bg-surface-subtle transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                <span className="text-body text-ink">내가 참여한 모임</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-label text-ink-tertiary">{myMeetups.length}개 참여중</span>
+                <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
+              </div>
+            </button>
           </div>
 
-          <div className="h-2 bg-surface-muted -mx-page" />
+          <div className="h-[6px] bg-surface-muted" />
+
+          {/* 메뉴 리스트 */}
+          {(() => {
+            const workoutHistory: { date: string; elapsed: number; totalVolume: number; focus: string; exercises: { name: string; category: string; sets: { weight: string; reps: string }[] }[] }[] = JSON.parse(localStorage.getItem('workout-history') || '[]')
+            const classHistory: { id: string; title: string; instructor: string; level: string; imageUrl: string; progress: number }[] = JSON.parse(localStorage.getItem('class-history') || '[]')
+            const classes = classHistory.length > 0 ? classHistory : [
+              { id: '1', title: '홈트레이닝 기초', instructor: '김민수', level: '초급', imageUrl: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=225&fit=crop', progress: 75 },
+              { id: '2', title: '바레톤 입문 클래스', instructor: '박지영', level: '초급', imageUrl: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=225&fit=crop', progress: 30 },
+            ]
+            const now = new Date()
+            const thisMonth = workoutHistory.filter(r => { const d = new Date(r.date); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() })
+
+            const menuItems = [
+              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>, label: '운동 기록', sub: `이번 달 ${thisMonth.length}회`, onClick: () => { switchTab('profile'); setProfileGrid('tagged') } },
+              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '온라인 강의', sub: `${classes.length}강의 수강 중`, onClick: () => navigate('/online-class') },
+              { icon: <IconUserPlus className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '친구 초대', sub: '3명 초대 · 15,000P', onClick: () => navigate('/invite') },
+              { icon: <IconStar className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none" />, label: '리뷰 이벤트', sub: '네이버 · 인스타그램', onClick: () => navigate('/review-event') },
+            ]
+
+            return (
+              <>
+                <div className="px-page">
+                  {menuItems.map((item, i) => (
+                    <button key={i} onClick={item.onClick} className="w-full flex items-center justify-between py-4 border-b border-border-light last:border-0">
+                      <div className="flex items-center gap-3">
+                        {item.icon}
+                        <span className="text-body text-ink">{item.label}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-label text-ink-tertiary">{item.sub}</span>
+                        <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+              </>
+            )
+          })()}
+
+          <div className="h-[6px] bg-surface-muted" />
 
           {/* 내 정보 메뉴 */}
-          <div className="py-section">
+          <div className="px-page py-section">
             <h3 className="text-body font-bold text-ink mb-1">내 정보</h3>
 
             <button
-              onClick={() => setShowPurchase(!showPurchase)}
+              onClick={() => navigate('/purchase')}
               className="w-full flex justify-between items-center py-3.5 border-b border-border-light hover:bg-surface-subtle transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -608,32 +661,9 @@ export const MyPage = () => {
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="text-caption text-primary font-bold">{purchaseHistory.length}건</span>
-                <svg viewBox="0 0 20 20" className={`w-4 h-4 transition-transform ${showPurchase ? 'text-primary rotate-180' : 'text-ink-tertiary'}`}>
-                  <path fill="currentColor" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" />
-                </svg>
+                <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
               </div>
             </button>
-            {showPurchase && (
-              <div className="py-2 flex flex-col gap-2 border-b border-border-light">
-                {purchaseHistory.map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => navigate(`/purchase/docs?name=${encodeURIComponent(p.name)}&price=${encodeURIComponent(p.price)}&gym=${encodeURIComponent(p.gym)}&method=${encodeURIComponent(p.method)}&order=${encodeURIComponent(p.order)}&date=${encodeURIComponent(p.date)}`)}
-                    className="w-full text-left bg-surface-muted rounded-card p-card-lg hover:bg-border-light transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className={`px-2 py-0.5 text-caption font-bold rounded ${p.status === '이용중' ? 'bg-primary text-white' : 'bg-ink-disabled text-ink-tertiary'}`}>{p.status}</span>
-                      <span className="text-caption text-ink-tertiary">{p.date.split(' ')[0]}</span>
-                    </div>
-                    <p className="text-label font-bold text-ink truncate">{p.name}</p>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-caption text-ink-tertiary">{p.gym}</span>
-                      <span className="text-label font-bold text-primary">{p.price}원</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
 
             {menuItems.map((item) => (
               <Link
@@ -650,12 +680,14 @@ export const MyPage = () => {
             ))}
           </div>
 
-          <button
-            onClick={() => window.location.href = '/login'}
-            className="w-full py-3 text-label text-ink-placeholder hover:text-ink-secondary transition-colors"
-          >
-            로그아웃
-          </button>
+          <div className="px-page pb-8">
+            <button
+              onClick={() => window.location.href = '/login'}
+              className="w-full py-3 text-label text-ink-placeholder hover:text-ink-secondary transition-colors"
+            >
+              로그아웃
+            </button>
+          </div>
         </div>
       )}
     </PageLayout>
