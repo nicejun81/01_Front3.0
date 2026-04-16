@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { PageLayout, SubPageHeader } from '../../components'
-import { IconStar } from '../../components/Icons'
 
 type ReviewTab = 'naver' | 'instagram'
 

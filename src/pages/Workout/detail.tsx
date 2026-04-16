@@ -127,7 +127,7 @@ export const AiProgramDetailPage = () => {
     ))
   }
 
-  const updateExercise = (dayLabel: string, exId: number, field: 'sets' | 'reps', value: string) => {
+  const _updateExercise = (dayLabel: string, exId: number, field: 'sets' | 'reps', value: string) => {
     if (!program) return
     updateSchedule(program.schedule.map(s =>
       s.day === dayLabel ? { ...s, exercises: s.exercises.map(e => e.id === exId ? { ...e, [field]: value } : e) } : s

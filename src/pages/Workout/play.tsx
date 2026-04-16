@@ -112,9 +112,9 @@ export const WorkoutPlayPage = () => {
   const currentEx = exercises[currentIdx]
   const fullEx = ALL_EXERCISES.find(e => e.id === currentEx?.id) || currentEx
   const records = currentEx ? (setRecords[currentEx.id] || []) : []
-  const currentDone = records.filter(s => s.done).length
+  const _currentDone = records.filter(s => s.done).length
 
-  const toggleSet = useCallback((setIdx: number) => {
+  const _toggleSet = useCallback((setIdx: number) => {
     if (!currentEx) return
     setSetRecords(prev => ({
       ...prev,
@@ -160,7 +160,7 @@ export const WorkoutPlayPage = () => {
     }))
   }, [currentEx])
 
-  const totalDone = Object.values(setRecords).flat().filter(s => s.done).length
+  const _totalDone = Object.values(setRecords).flat().filter(s => s.done).length
   const totalSets = Object.values(setRecords).flat().length
 
   const goNext = () => {

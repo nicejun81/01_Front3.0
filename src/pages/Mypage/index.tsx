@@ -105,13 +105,6 @@ const myMeetups = [
   },
 ]
 
-const menuItems = [
-  { icon: IconCalendarCheck, label: '출석 챌린지', href: '/attendance' },
-  { icon: IconShield, label: '차단한 사용자', href: '/blocked' },
-  { icon: IconShield, label: '개인정보 보호', href: '/privacy' },
-  { icon: IconMessage, label: '고객센터', href: '/support' },
-  { icon: IconInfo, label: '앱 정보', href: '/about' },
-]
 
 const statusStyles: Record<string, string> = {
   active: 'bg-ink text-white',

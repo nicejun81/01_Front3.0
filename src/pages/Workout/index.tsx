@@ -138,7 +138,7 @@ const loadAiPrograms = (): AiProgram[] => {
 
 const CATEGORIES = ['전체', '가슴', '등', '어깨', '하체', '팔', '코어', '유산소'] as const
 
-const CustomWorkoutTab = ({ saved, toggleSave, savedExercises, toast, setToast }: {
+const _CustomWorkoutTab = ({ saved, toggleSave, savedExercises, toast: _toast, setToast: _setToast }: {
   saved: number[]
   toggleSave: (ex: Exercise) => void
   savedExercises: Exercise[]
@@ -293,7 +293,7 @@ export const WorkoutPage = () => {
   const [mode, setMode] = useState<null | 'confirm' | 'custom'>(null)
 
   // workout state
-  const [workoutTab, setWorkoutTab] = useState<'ai' | 'custom'>('ai')
+  const [_workoutTab, _setWorkoutTab] = useState<'ai' | 'custom'>('ai')
   const [saved, setSaved] = useState<number[]>(loadSaved)
   const [toast, setToast] = useState<string | null>(null)
 
@@ -372,7 +372,7 @@ export const WorkoutPage = () => {
     setInbody({ height: '', weight: '', muscleMass: '', bodyFat: '', bodyWater: '', basalMetab: '', visceralFat: '', bmi: '' })
   }
 
-  const toggleSave = (ex: Exercise) => {
+  const _toggleSave = (ex: Exercise) => {
     setSaved(prev => {
       const next = prev.includes(ex.id) ? prev.filter(id => id !== ex.id) : [...prev, ex.id]
       localStorage.setItem(SAVED_KEY, JSON.stringify(next))
@@ -382,7 +382,7 @@ export const WorkoutPage = () => {
     })
   }
 
-  const savedExercises = ALL_EXERCISES.filter(e => saved.includes(e.id))
+  const _savedExercises = ALL_EXERCISES.filter(e => saved.includes(e.id))
 
   // 몸상태 체크 전
   if (!bodyCheck) {
