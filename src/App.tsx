@@ -16,6 +16,7 @@ import {
   ActivityPage,
   ShopPage,
   AttendancePage,
+  ChallengePage,
   InvitePage,
   ReviewEventPage,
   TrainerDetailPage,
@@ -70,6 +71,7 @@ export const App = () => {
         <Route path="/activity" element={<ActivityPage />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/attendance" element={<AttendancePage />} />
+        <Route path="/challenge" element={<ChallengePage />} />
         <Route path="/invite" element={<InvitePage />} />
         <Route path="/review-event" element={<ReviewEventPage />} />
         <Route path="/trainer/:id" element={<TrainerDetailPage />} />

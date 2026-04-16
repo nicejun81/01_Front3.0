@@ -582,31 +582,7 @@ export const MyPage = () => {
 
           <div className="h-[6px] bg-surface-muted" />
 
-          {/* 내가 참여한 모임 */}
-          <div className="px-page">
-            <button
-              onClick={() => navigate('/activity')}
-              className="w-full flex justify-between items-center py-4 border-b border-border-light hover:bg-surface-subtle transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-                <span className="text-body text-ink">내가 참여한 모임</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-label text-ink-tertiary">{myMeetups.length}개 참여중</span>
-                <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
-              </div>
-            </button>
-          </div>
-
-          <div className="h-[6px] bg-surface-muted" />
-
-          {/* 메뉴 리스트 */}
+          {/* 내 활동 */}
           {(() => {
             const workoutHistory: { date: string; elapsed: number; totalVolume: number; focus: string; exercises: { name: string; category: string; sets: { weight: string; reps: string }[] }[] }[] = JSON.parse(localStorage.getItem('workout-history') || '[]')
             const classHistory: { id: string; title: string; instructor: string; level: string; imageUrl: string; progress: number }[] = JSON.parse(localStorage.getItem('class-history') || '[]')
@@ -617,65 +593,92 @@ export const MyPage = () => {
             const now = new Date()
             const thisMonth = workoutHistory.filter(r => { const d = new Date(r.date); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() })
 
-            const menuItems = [
+            const activityItems = [
               { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>, label: '운동 기록', sub: `이번 달 ${thisMonth.length}회`, onClick: () => { switchTab('profile'); setProfileGrid('tagged') } },
               { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '온라인 강의', sub: `${classes.length}강의 수강 중`, onClick: () => navigate('/online-class') },
-              { icon: <IconUserPlus className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '친구 초대', sub: '3명 초대 · 15,000P', onClick: () => navigate('/invite') },
-              { icon: <IconStar className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none" />, label: '리뷰 이벤트', sub: '네이버 · 인스타그램', onClick: () => navigate('/review-event') },
+              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, label: '내가 참여한 모임', sub: `${myMeetups.length}개 참여중`, onClick: () => navigate('/activity') },
+              { icon: <IconCalendarCheck className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '챌린지', sub: '', onClick: () => navigate('/challenge') },
             ]
 
             return (
-              <>
-                <div className="px-page">
-                  {menuItems.map((item, i) => (
-                    <button key={i} onClick={item.onClick} className="w-full flex items-center justify-between py-4 border-b border-border-light last:border-0">
-                      <div className="flex items-center gap-3">
-                        {item.icon}
-                        <span className="text-body text-ink">{item.label}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-label text-ink-tertiary">{item.sub}</span>
-                        <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-
-              </>
+              <div className="px-page py-section">
+                <h3 className="text-body font-bold text-ink mb-1">내 활동</h3>
+                {activityItems.map((item, i) => (
+                  <button key={i} onClick={item.onClick} className="w-full flex items-center justify-between py-3.5 border-b border-border-light last:border-0 hover:bg-surface-subtle transition-colors">
+                    <div className="flex items-center gap-3">
+                      {item.icon}
+                      <span className="text-body text-ink">{item.label}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {item.sub && <span className="text-label text-ink-tertiary">{item.sub}</span>}
+                      <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
+                    </div>
+                  </button>
+                ))}
+              </div>
             )
           })()}
 
           <div className="h-[6px] bg-surface-muted" />
 
-          {/* 내 정보 메뉴 */}
+          {/* 혜택 */}
           <div className="px-page py-section">
-            <h3 className="text-body font-bold text-ink mb-1">내 정보</h3>
-
-            <button
-              onClick={() => navigate('/purchase')}
-              className="w-full flex justify-between items-center py-3.5 border-b border-border-light hover:bg-surface-subtle transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <IconClipboard className="w-5 h-5 stroke-ink-secondary stroke-[1.5]" />
-                <span className="text-body text-ink">구매 내역</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-caption text-primary font-bold">{purchaseHistory.length}건</span>
-                <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
-              </div>
-            </button>
-
-            {menuItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="flex justify-between items-center py-3.5 border-b border-border-light last:border-0 hover:bg-surface-subtle transition-colors"
-              >
+            <h3 className="text-body font-bold text-ink mb-1">혜택</h3>
+            {[
+              { icon: <IconUserPlus className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '친구 초대', sub: '3명 초대 · 15,000P', onClick: () => navigate('/invite') },
+              { icon: <IconStar className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none" />, label: '리뷰 이벤트', sub: '네이버 · 인스타그램', onClick: () => navigate('/review-event') },
+            ].map((item, i) => (
+              <button key={i} onClick={item.onClick} className="w-full flex items-center justify-between py-3.5 border-b border-border-light last:border-0 hover:bg-surface-subtle transition-colors">
                 <div className="flex items-center gap-3">
-                  <item.icon className="w-5 h-5 stroke-ink-secondary stroke-[1.5]" />
+                  {item.icon}
                   <span className="text-body text-ink">{item.label}</span>
                 </div>
-                <IconChevronRight className="w-4 h-4 stroke-ink-placeholder stroke-[1.5]" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-label text-ink-tertiary">{item.sub}</span>
+                  <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="h-[6px] bg-surface-muted" />
+
+          {/* 내 정보 */}
+          <div className="px-page py-section">
+            <h3 className="text-body font-bold text-ink mb-1">내 정보</h3>
+            {[
+              { icon: <IconClipboard className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '구매 내역', sub: `${purchaseHistory.length}건`, highlight: true, onClick: () => navigate('/purchase') },
+              { icon: <IconShield className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '차단한 사용자', sub: '', highlight: false, onClick: () => navigate('/blocked') },
+              { icon: <IconShield className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '개인정보 보호', sub: '', highlight: false, onClick: () => navigate('/privacy') },
+            ].map((item, i) => (
+              <button key={i} onClick={item.onClick} className="w-full flex justify-between items-center py-3.5 border-b border-border-light last:border-0 hover:bg-surface-subtle transition-colors">
+                <div className="flex items-center gap-3">
+                  {item.icon}
+                  <span className="text-body text-ink">{item.label}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  {item.sub && <span className={`text-caption font-bold ${item.highlight ? 'text-primary' : 'text-ink-tertiary'}`}>{item.sub}</span>}
+                  <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="h-[6px] bg-surface-muted" />
+
+          {/* 고객지원 */}
+          <div className="px-page py-section">
+            <h3 className="text-body font-bold text-ink mb-1">고객지원</h3>
+            {[
+              { icon: IconMessage, label: '고객센터', href: '/support' },
+              { icon: IconInfo, label: '앱 정보', href: '/about' },
+            ].map((item) => (
+              <Link key={item.label} to={item.href} className="flex justify-between items-center py-3.5 border-b border-border-light last:border-0 hover:bg-surface-subtle transition-colors">
+                <div className="flex items-center gap-3">
+                  <item.icon className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />
+                  <span className="text-body text-ink">{item.label}</span>
+                </div>
+                <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
               </Link>
             ))}
           </div>

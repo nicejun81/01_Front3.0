@@ -48,10 +48,10 @@ const categories: CategoryItem[] = [
     gradient: 'bg-gradient-to-br from-[#06B6D4] to-[#22d3ee]',
   },
   {
-    id: 'attendance',
-    label: '출석 챌린지',
+    id: 'challenge',
+    label: '챌린지',
     icon: <IconCalendarCheck className="w-7 h-7 stroke-white stroke-[1.5]" />,
-    href: '/attendance',
+    href: '/challenge',
     gradient: 'bg-gradient-to-br from-accent-purple to-primary-light',
   },
   {

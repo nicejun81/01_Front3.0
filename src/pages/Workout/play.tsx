@@ -280,6 +280,19 @@ export const WorkoutPlayPage = () => {
                   })
                 }
                 localStorage.setItem('pending-workout-feed', JSON.stringify(feedData))
+                // 운동 기록도 함께 저장
+                const history = JSON.parse(localStorage.getItem('workout-history') || '[]')
+                history.unshift({
+                  date: feedData.date,
+                  programTitle: program.title || `${program.period} 프로그램`,
+                  elapsed,
+                  totalVolume,
+                  totalSets,
+                  estCalories,
+                  focus: feedData.focus,
+                  exercises: feedData.exercises,
+                })
+                localStorage.setItem('workout-history', JSON.stringify(history))
                 navigate('/feed/new?type=workout')
               }}
               className="w-full py-4 bg-primary text-white font-bold rounded-card hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
