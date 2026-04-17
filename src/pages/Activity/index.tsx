@@ -235,7 +235,7 @@ const feeds = [
   {
     id: 5,
     imageUrls: [
-      'https://images.unsplash.com/photo-1461897104016-0b3b00b1ea56?w=800&h=800&fit=crop',
+      'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&h=800&fit=crop',
       'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&h=800&fit=crop',
     ],
     authorImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',

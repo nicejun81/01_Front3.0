@@ -219,7 +219,7 @@ const feeds = [
   },
   {
     id: 5,
-    imageUrl: 'https://images.unsplash.com/photo-1461897104016-0b3b00b1ea56?w=400&h=400&fit=crop',
+    imageUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=400&h=400&fit=crop',
     authorImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
     authorName: '러닝매니아',
     text: '오늘 한강 러닝 10km 완주! 🏃‍♀️',
