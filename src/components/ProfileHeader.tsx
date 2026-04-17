@@ -11,11 +11,12 @@ interface ProfileHeaderProps {
   name: string
   bio?: string
   link?: string
+  verified?: boolean
   stats: ProfileStat[]
   actions: ReactNode
 }
 
-export const ProfileHeader = ({ imageUrl, name, bio, link, stats, actions }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ imageUrl, name, bio, link, verified, stats, actions }: ProfileHeaderProps) => {
   return (
     <>
       <div className="px-page py-section">
@@ -40,7 +41,15 @@ export const ProfileHeader = ({ imageUrl, name, bio, link, stats, actions }: Pro
         </div>
 
         <div className="mb-4">
-          <div className="text-body font-semibold text-ink">{name}</div>
+          <div className="flex items-center gap-1">
+            <span className="text-body font-semibold text-ink">{name}</span>
+            {verified && (
+              <svg viewBox="0 0 24 24" className="w-[18px] h-[18px] flex-shrink-0" aria-label="인증됨">
+                <circle cx="12" cy="12" r="11" fill="#3B82F6" />
+                <path d="M7.5 12.5l3 3 6-6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </svg>
+            )}
+          </div>
           {bio && (
             <div className="text-body text-ink-secondary whitespace-pre-line">{bio}</div>
           )}

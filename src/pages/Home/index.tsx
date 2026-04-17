@@ -181,7 +181,7 @@ const feeds = [
     id: 1,
     imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=400&fit=crop',
     authorImageUrl: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=100&h=100&fit=crop&crop=face',
-    authorName: '김민수',
+    authorName: '김트레이너',
     text: '오늘도 열심히 운동 완료! 💪',
     likeCount: 128,
     commentCount: 24,
@@ -191,7 +191,7 @@ const feeds = [
     id: 2,
     imageUrl: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop',
     authorImageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=100&h=100&fit=crop&crop=face',
-    authorName: '박지영',
+    authorName: '헬스왕',
     text: '바레톤 수업 후기 🧘‍♀️ 정말 시원하네요',
     likeCount: 89,
     commentCount: 12,
@@ -201,7 +201,7 @@ const feeds = [
     id: 3,
     imageUrl: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop',
     authorImageUrl: 'https://images.unsplash.com/photo-1597347316205-36f6c451902a?w=100&h=100&fit=crop&crop=face',
-    authorName: '이준혁',
+    authorName: '운동하는직장인',
     text: '3개월 벌크업 결과! 드디어 목표 달성 🎉',
     likeCount: 256,
     commentCount: 48,
@@ -211,7 +211,7 @@ const feeds = [
     id: 4,
     imageUrl: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=400&h=400&fit=crop',
     authorImageUrl: 'https://images.unsplash.com/photo-1549476464-37392f717541?w=100&h=100&fit=crop&crop=face',
-    authorName: '정서연',
+    authorName: '바레톤요정',
     text: '오늘의 운동 루틴 공유해요 ✨',
     likeCount: 67,
     commentCount: 8,
@@ -219,22 +219,22 @@ const feeds = [
   },
   {
     id: 5,
-    imageUrl: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=400&fit=crop',
-    authorImageUrl: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=100&h=100&fit=crop&crop=face',
-    authorName: '한동훈',
-    text: '러닝크루와 함께한 주말 아침 🏃‍♂️',
-    likeCount: 192,
+    imageUrl: 'https://images.unsplash.com/photo-1461897104016-0b3b00b1ea56?w=400&h=400&fit=crop',
+    authorImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    authorName: '러닝매니아',
+    text: '오늘 한강 러닝 10km 완주! 🏃‍♀️',
+    likeCount: 184,
     commentCount: 32,
-    isLiked: true,
+    isLiked: false,
   },
   {
     id: 6,
-    imageUrl: 'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400&h=400&fit=crop',
-    authorImageUrl: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=100&h=100&fit=crop&crop=face',
-    authorName: '윤미래',
-    text: '다이어트 1개월 차 -5kg 달성! 🔥',
-    likeCount: 312,
-    commentCount: 56,
+    imageUrl: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&h=400&fit=crop',
+    authorImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    authorName: '크로스핏러',
+    text: '남산 트레일 러닝 도전 🏔️',
+    likeCount: 95,
+    commentCount: 16,
     isLiked: true,
   },
 ]
@@ -357,7 +357,7 @@ export const HomePage = () => {
               likeCount={feed.likeCount}
               commentCount={feed.commentCount}
               isLiked={feed.isLiked}
-              onClick={() => navigate(`/feed/${feed.id}`)}
+              onClick={() => navigate('/activity')}
             />
           ))}
         </div>

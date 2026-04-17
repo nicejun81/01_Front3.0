@@ -29,6 +29,7 @@ import {
   BlockedPage,
   FeedCreatePage,
   ProfileEditPage,
+  WorkoutHistoryPage,
   UserProfilePage,
   UserPostsPage,
   UserFollowersPage,
@@ -65,6 +66,7 @@ export const App = () => {
         <Route path="/components" element={<ComponentsShowcasePage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/edit" element={<ProfileEditPage />} />
+        <Route path="/mypage/workout-history" element={<WorkoutHistoryPage />} />
         <Route path="/membership" element={<MembershipPage />} />
         <Route path="/lesson" element={<LessonPage />} />
         <Route path="/online-class" element={<OnlineClassPage />} />

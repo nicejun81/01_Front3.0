@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageLayout, SubPageHeader, FilterTabs } from '../../components'
 import { IconSearch, IconHeart, IconMessage, IconCalendar, IconMapPin, IconShare } from '../../components/Icons'
 
-const Stat = ({ label, value, unit, divider }: { label: string; value: string; unit?: string; divider?: boolean }) => (
+const Stat = memo(({ label, value, unit, divider }: { label: string; value: string; unit?: string; divider?: boolean }) => (
   <div className={divider ? 'border-x border-white/10 px-3' : ''}>
     <div className="text-heading font-extrabold leading-none tabular-nums">
       {value}
@@ -11,10 +11,76 @@ const Stat = ({ label, value, unit, divider }: { label: string; value: string; u
     </div>
     <div className="text-caption text-white/50 mt-1.5">{label}</div>
   </div>
-)
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+))
+const SectionLabel = memo(({ children }: { children: React.ReactNode }) => (
   <div className="text-caption uppercase tracking-widest text-white/50 mb-3">{children}</div>
-)
+))
+
+/* ── GPS Route Map ── */
+const RouteMap = memo(({ route, location: loc }: { route: number[][]; location: string }) => {
+  const TILE = 256, COLS = 3, ROWS = 3
+  const W = TILE * COLS, H = TILE * ROWS
+
+  const lats = route.map(p => p[0]), lngs = route.map(p => p[1])
+  const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2
+  const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2
+  const latSpan = Math.max(...lats) - Math.min(...lats)
+  const lngSpan = Math.max(...lngs) - Math.min(...lngs)
+  const zoom = latSpan > 0.02 || lngSpan > 0.025 ? 14 : latSpan > 0.01 || lngSpan > 0.015 ? 15 : 16
+
+  const n = Math.pow(2, zoom)
+  const centerLatRad = centerLat * Math.PI / 180
+  const originX = Math.floor((centerLng + 180) / 360 * n) - Math.floor(COLS / 2)
+  const originY = Math.floor((1 - Math.log(Math.tan(centerLatRad) + 1 / Math.cos(centerLatRad)) / Math.PI) / 2 * n) - Math.floor(ROWS / 2)
+
+  const toPixel = (lat: number, lng: number) => {
+    const tileX = (lng + 180) / 360 * n
+    const latR = lat * Math.PI / 180
+    const tileY = (1 - Math.log(Math.tan(latR) + 1 / Math.cos(latR)) / Math.PI) / 2 * n
+    return { x: (tileX - originX) * TILE, y: (tileY - originY) * TILE }
+  }
+
+  const pts = route.map(p => toPixel(p[0], p[1]))
+  const pathD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+  const startPt = pts[0], endPt = pts[pts.length - 1]
+
+  const tiles = Array.from({ length: ROWS * COLS }, (_, i) => {
+    const col = i % COLS, row = Math.floor(i / COLS)
+    return { key: `${col}-${row}`, url: `https://basemaps.cartocdn.com/dark_all/${zoom}/${originX + col}/${originY + row}@2x.png` }
+  })
+
+  return (
+    <div className="rounded-card-lg overflow-hidden border border-white/10">
+      {/* 지도 영역 */}
+      <div className="relative" style={{ aspectRatio: `${COLS}/${ROWS}` }}>
+        <div className="absolute inset-0 grid" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gridTemplateRows: `repeat(${ROWS}, 1fr)` }}>
+          {tiles.map(t => <img key={t.key} src={t.url} alt="" className="w-full h-full object-cover" draggable={false} loading="lazy" />)}
+        </div>
+        <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 w-full h-full">
+          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="8" strokeOpacity="0.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx={startPt.x} cy={startPt.y} r="8" fill="#22c55e" />
+          <circle cx={startPt.x} cy={startPt.y} r="4" fill="white" />
+          <circle cx={endPt.x} cy={endPt.y} r="8" fill="#ef4444" />
+          <circle cx={endPt.x} cy={endPt.y} r="4" fill="white" />
+        </svg>
+      </div>
+      {/* 라벨 영역 (지도 아래 분리) */}
+      <div className="flex items-center justify-between px-3 py-2 bg-[#1a1a2e]">
+        <div className="flex items-center gap-1.5">
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-white/60 stroke-[1.5] fill-none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span className="text-caption text-white/60">{loc}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-accent-green" />
+          <span className="text-caption text-white/50">출발</span>
+          <span className="w-2 h-2 rounded-full bg-semantic-like ml-1.5" />
+          <span className="text-caption text-white/50">도착</span>
+        </div>
+      </div>
+    </div>
+  )
+})
 
 /* ── Stories ── */
 const stories = [
@@ -184,6 +250,15 @@ const feeds = [
       distance: 10.2,
       duration: '52:34',
       avgPace: '5\'09"',
+      elevation: { gain: 42, loss: 38 },
+      avgCadence: 174,
+      route: [
+        [37.5283,126.9346],[37.5290,126.9360],[37.5298,126.9378],[37.5305,126.9395],
+        [37.5310,126.9415],[37.5308,126.9438],[37.5300,126.9455],[37.5288,126.9468],
+        [37.5275,126.9475],[37.5260,126.9478],[37.5245,126.9472],[37.5232,126.9460],
+        [37.5225,126.9442],[37.5222,126.9420],[37.5228,126.9400],[37.5238,126.9382],
+        [37.5250,126.9368],[37.5262,126.9355],[37.5275,126.9348],[37.5283,126.9346],
+      ],
       splits: [
         { km: 1, pace: '5\'22"' },
         { km: 2, pace: '5\'18"' },
@@ -220,6 +295,14 @@ const feeds = [
       distance: 6.8,
       duration: '42:18',
       avgPace: '6\'13"',
+      elevation: { gain: 186, loss: 182 },
+      avgCadence: 162,
+      route: [
+        [37.5512,126.9882],[37.5520,126.9895],[37.5530,126.9910],[37.5538,126.9928],
+        [37.5542,126.9948],[37.5540,126.9968],[37.5532,126.9982],[37.5520,126.9990],
+        [37.5508,126.9985],[37.5500,126.9970],[37.5495,126.9950],[37.5498,126.9930],
+        [37.5505,126.9912],[37.5512,126.9898],[37.5512,126.9882],
+      ],
       splits: [
         { km: 1, pace: '5\'45"' },
         { km: 2, pace: '6\'20"' },
@@ -256,6 +339,14 @@ const feeds = [
       distance: 5.0,
       duration: '24:15',
       avgPace: '4\'51"',
+      elevation: { gain: 18, loss: 15 },
+      avgCadence: 182,
+      route: [
+        [37.5202,127.1158],[37.5215,127.1172],[37.5228,127.1188],[37.5240,127.1205],
+        [37.5248,127.1225],[37.5250,127.1248],[37.5245,127.1268],[37.5235,127.1280],
+        [37.5220,127.1285],[37.5205,127.1278],[37.5195,127.1260],[37.5192,127.1240],
+        [37.5195,127.1218],[37.5200,127.1195],[37.5202,127.1175],[37.5202,127.1158],
+      ],
       splits: [
         { km: 1, pace: '5\'02"' },
         { km: 2, pace: '4\'55"' },
@@ -383,22 +474,22 @@ export const ActivityPage = () => {
     6: [],
     7: [{ author: '러닝매니아', text: '새벽 러닝 최고죠!' }],
   })
-  const submitComment = () => {
+  const submitComment = useCallback(() => {
     if (!commentInput.trim() || commentFeedId === null) return
     setCommentsMap(m => ({
       ...m,
       [commentFeedId]: [...(m[commentFeedId] || []), { author: '나', text: commentInput.trim() }],
     }))
     setCommentInput('')
-  }
+  }, [commentInput, commentFeedId])
   const [likedMap, setLikedMap] = useState<Record<number, { liked: boolean; count: number }>>(
     () => Object.fromEntries(feeds.map(f => [f.id, { liked: f.isLiked, count: f.likeCount }]))
   )
-  const toggleLike = (id: number) => setLikedMap(m => {
+  const toggleLike = useCallback((id: number) => setLikedMap(m => {
     const cur = m[id]
     return { ...m, [id]: { liked: !cur.liked, count: cur.liked ? cur.count - 1 : cur.count + 1 } }
-  })
-  const shareFeed = (id: number) => {
+  }), [])
+  const shareFeed = useCallback((id: number) => {
     const url = `${window.location.origin}/feed/${id}`
     if (navigator.share) {
       navigator.share({ title: '바디채널 피드', url }).catch(() => {})
@@ -406,11 +497,12 @@ export const ActivityPage = () => {
       navigator.clipboard?.writeText(url)
       alert('링크가 복사되었어요')
     }
-  }
+  }, [])
 
-  const filteredMeetups = selectedCategory === '전체'
-    ? meetups
-    : meetups.filter(m => m.category === selectedCategory)
+  const filteredMeetups = useMemo(() =>
+    selectedCategory === '전체' ? meetups : meetups.filter(m => m.category === selectedCategory),
+    [selectedCategory]
+  )
 
   const header = (
     <SubPageHeader
@@ -1171,13 +1263,47 @@ export const ActivityPage = () => {
                   </div>
                 </div>
 
+                {/* GPS Route Map (running only) */}
+                {isRunning && feed.running!.route && (
+                  <RouteMap route={feed.running!.route as number[][]} location={feed.location} />
+                )}
+
                 {/* Hero stats card */}
                 {isRunning ? (
-                  <div className="grid grid-cols-3 gap-3 p-5 rounded-card-lg bg-white/5 border border-white/10">
-                    <Stat label="거리" value={String(feed.running!.distance)} unit="km" />
-                    <Stat label="평균 페이스" value={feed.running!.avgPace} divider />
-                    <Stat label="활동 칼로리" value={String(wearable.activeKcal)} unit="kcal" />
-                  </div>
+                  <>
+                    <div className="grid grid-cols-3 gap-3 p-5 rounded-card-lg bg-white/5 border border-white/10">
+                      <Stat label="거리" value={String(feed.running!.distance)} unit="km" />
+                      <Stat label="평균 페이스" value={feed.running!.avgPace} divider />
+                      <Stat label="활동 칼로리" value={String(wearable.activeKcal)} unit="kcal" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 p-4 rounded-card-lg bg-white/5 border border-white/10">
+                      {feed.running!.elevation && (
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-accent-green stroke-[1.5] fill-none"><path d="m3 20 5-16 4 10 3-6 6 12"/></svg>
+                            <span className="text-label font-bold text-white tabular-nums">{feed.running!.elevation.gain}m</span>
+                          </div>
+                          <div className="text-caption text-white/40">획득 고도</div>
+                        </div>
+                      )}
+                      {feed.running!.avgCadence && (
+                        <div className="text-center border-x border-white/10">
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-accent-green stroke-[1.5] fill-none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                            <span className="text-label font-bold text-white tabular-nums">{feed.running!.avgCadence}</span>
+                          </div>
+                          <div className="text-caption text-white/40">평균 케이던스</div>
+                        </div>
+                      )}
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 stroke-accent-green stroke-[1.5] fill-none"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                          <span className="text-label font-bold text-white tabular-nums">{feed.running!.duration}</span>
+                        </div>
+                        <div className="text-caption text-white/40">운동 시간</div>
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <div className="grid grid-cols-3 gap-3 p-5 rounded-card-lg bg-white/5 border border-white/10">
                     <Stat label="총 볼륨" value={feed.workout!.totalVolume.toLocaleString()} unit="kg" />

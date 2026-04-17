@@ -124,7 +124,6 @@ export const MyPage = () => {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<'profile' | 'my'>(searchParams.get('tab') === 'profile' ? 'profile' : 'my')
-  const [profileGrid, setProfileGrid] = useState<'grid' | 'tagged'>('grid')
   const [membershipTab, setMembershipTab] = useState<typeof MEMBERSHIP_TABS[number]>('이용중')
   const switchTab = (tab: 'profile' | 'my') => {
     setActiveTab(tab)
@@ -192,6 +191,7 @@ export const MyPage = () => {
           <ProfileHeader
             imageUrl="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=200&h=200&fit=crop&crop=face"
             name="김피트"
+            verified
             bio={`바디채널 강남점 💪 3개월째 운동중\n매일 아침 6시 기상 | PT + 바레톤 | 체중 -8kg 달성`}
             stats={profileStats.map(s => ({
               ...s,
@@ -223,137 +223,15 @@ export const MyPage = () => {
             </>}
           />
 
-          {/* 그리드/태그 토글 */}
-          <div className="flex border-t border-border">
-            <button
-              onClick={() => setProfileGrid('grid')}
-              className={`flex-1 flex justify-center py-2.5 border-b-2 transition-colors ${
-                profileGrid === 'grid' ? 'border-ink' : 'border-transparent'
-              }`}
-            >
-              <svg viewBox="0 0 24 24" className={`w-5 h-5 fill-none stroke-[1.5] ${profileGrid === 'grid' ? 'stroke-ink' : 'stroke-ink-placeholder'}`}>
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-                <rect x="14" y="14" width="7" height="7" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setProfileGrid('tagged')}
-              className={`flex-1 flex justify-center py-2.5 border-b-2 transition-colors ${
-                profileGrid === 'tagged' ? 'border-ink' : 'border-transparent'
-              }`}
-            >
-              <svg viewBox="0 0 24 24" className={`w-5 h-5 fill-none stroke-[1.5] ${profileGrid === 'tagged' ? 'stroke-ink' : 'stroke-ink-placeholder'}`}>
-                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-                <line x1="7" y1="7" x2="7.01" y2="7" />
-              </svg>
-            </button>
-          </div>
-
           {/* 게시물 그리드 */}
-          <div className="grid grid-cols-3 gap-0.5">
-            {profileGrid === 'grid' ? (
-              profilePosts.map((url, i) => (
+          <div className="border-t border-border">
+            <div className="grid grid-cols-3 gap-0.5">
+              {profilePosts.map((url, i) => (
                 <button key={i} onClick={() => navigate('/activity')} className="aspect-square overflow-hidden hover:opacity-80 transition-opacity">
                   <img src={url} alt="" className="w-full h-full object-cover" />
                 </button>
-              ))
-            ) : (() => {
-              const now = new Date()
-              const yr = now.getFullYear(), mo = now.getMonth(), td = now.getDate()
-              const first = new Date(yr, mo, 1).getDay()
-              const dim = new Date(yr, mo + 1, 0).getDate()
-
-              // localStorage에서 실제 운동 기록 읽기
-              const rawHistory: { date: string; programTitle?: string; elapsed: number; totalVolume: number; totalSets: number; estCalories: number; focus: string; exercises: { name: string; category: string; sets: { weight: string; reps: string }[] }[] }[] = JSON.parse(localStorage.getItem('workout-history') || '[]')
-
-              // 이번 달 기록만 필터 → 날짜(day) 기준으로 매핑
-              const workoutDays = new Set<number>()
-              const details: Record<number, { ex: number; dur: string; vol: string }> = {}
-              rawHistory.forEach(rec => {
-                const d = new Date(rec.date)
-                if (d.getFullYear() === yr && d.getMonth() === mo) {
-                  const day = d.getDate()
-                  workoutDays.add(day)
-                  if (!details[day]) {
-                    const mins = Math.floor((rec.elapsed || 0) / 60)
-                    const durStr = mins >= 60 ? `${Math.floor(mins/60)}시간 ${mins%60 ? mins%60+'분' : ''}`.trim() : `${mins}분`
-                    const volStr = rec.totalVolume > 0 ? `${rec.totalVolume.toLocaleString()}kg` : '맨몸'
-                    details[day] = { ex: rec.exercises?.length || 0, dur: durStr, vol: volStr }
-                  }
-                }
-              })
-              const wk = ['일','월','화','수','목','금','토']
-              const cells: (number|null)[] = Array(first).fill(null)
-              for (let d=1;d<=dim;d++) cells.push(d)
-              while (cells.length%7) cells.push(null)
-              const tot = workoutDays.size
-              const streak = (() => { let s=0; for(let d=td;d>=1;d--){ if(workoutDays.has(d))s++; else break } return s })()
-              return (
-                <div className="col-span-3 px-page py-4">
-                  {/* 요약 */}
-                  <div className="grid grid-cols-3 gap-2 p-3 bg-primary-50 rounded-card-lg mb-4">
-                    <div className="text-center">
-                      <div className="text-title font-extrabold text-primary tabular-nums">{tot}</div>
-                      <div className="text-caption text-ink-tertiary">이번 달</div>
-                    </div>
-                    <div className="text-center border-x border-primary/20">
-                      <div className="text-title font-extrabold text-primary tabular-nums">{streak}</div>
-                      <div className="text-caption text-ink-tertiary">연속</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-title font-extrabold text-primary tabular-nums">{Math.round(tot/td*100)}%</div>
-                      <div className="text-caption text-ink-tertiary">출석률</div>
-                    </div>
-                  </div>
-                  {/* 요일 */}
-                  <div className="grid grid-cols-7 gap-1 mb-1">
-                    {wk.map(w=>(
-                      <div key={w} className={`text-center text-caption font-semibold ${w==='일'?'text-semantic-like':w==='토'?'text-accent-purple':'text-ink-tertiary'}`}>{w}</div>
-                    ))}
-                  </div>
-                  {/* 달력 */}
-                  <div className="grid grid-cols-7 gap-1 mb-4">
-                    {cells.map((day,i)=>{
-                      if(!day) return <div key={i}/>
-                      const isToday=day===td, worked=workoutDays.has(day), isFuture=day>td
-                      const dow=new Date(yr,mo,day).getDay()
-                      return (
-                        <div key={i} className={`relative flex flex-col items-center justify-center py-2 rounded-card ${isToday?'bg-primary text-white':worked?'bg-primary-50':''}`}>
-                          <span className={`text-label font-semibold tabular-nums ${isToday?'text-white':isFuture?'text-ink-disabled':dow===0?'text-semantic-like':dow===6?'text-accent-purple':'text-ink'}`}>{day}</span>
-                          {worked && <span className={`w-1.5 h-1.5 rounded-full mt-0.5 ${isToday?'bg-white':'bg-primary'}`}/>}
-                        </div>
-                      )
-                    })}
-                  </div>
-                  {/* 최근 기록 */}
-                  <div className="text-label font-bold text-ink mb-2">최근 운동기록</div>
-                  <div className="flex flex-col gap-2">
-                    {[...workoutDays].filter(d=>d<=td).sort((a,b)=>b-a).slice(0,5).length === 0 ? (
-                      <div className="py-6 text-center text-caption text-ink-placeholder">이번 달 운동 기록이 없습니다</div>
-                    ) : [...workoutDays].filter(d=>d<=td).sort((a,b)=>b-a).slice(0,5).map(d=>{
-                      const dt = details[d]
-                      if(!dt) return null
-                      return (
-                        <div key={d} className="flex items-center justify-between p-3 bg-surface-muted rounded-card">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${d===td?'bg-primary text-white':'bg-primary-50 text-primary'}`}>
-                              <span className="text-label font-bold tabular-nums">{d}</span>
-                            </div>
-                            <div>
-                              <div className="text-body font-semibold text-ink">{dt.ex}종목 · {dt.dur}</div>
-                              <div className="text-caption text-ink-tertiary">{dt.vol}</div>
-                            </div>
-                          </div>
-                          <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-ink-tertiary stroke-2 fill-none shrink-0"><path d="m9 18 6-6-6-6"/></svg>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })()}
+              ))}
+            </div>
           </div>
         </>
       ) : (
@@ -366,7 +244,13 @@ export const MyPage = () => {
                 <IconUser className="w-7 h-7 stroke-ink-placeholder stroke-[1.5]" />
               </div>
               <div className="flex-1">
-                <h2 className="text-body font-bold text-ink">김피트</h2>
+                <div className="flex items-center gap-1">
+                  <h2 className="text-body font-bold text-ink">김피트</h2>
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0" aria-label="인증됨">
+                    <circle cx="12" cy="12" r="11" fill="#3B82F6" />
+                    <path d="M7.5 12.5l3 3 6-6" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                  </svg>
+                </div>
                 <p className="text-caption text-ink-tertiary">fitkim@email.com</p>
               </div>
               <button onClick={() => navigate('/mypage/edit')} className="px-3.5 py-1.5 text-caption font-semibold text-ink-secondary border border-border rounded-pill hover:bg-surface-muted transition-colors">
@@ -587,7 +471,7 @@ export const MyPage = () => {
             const thisMonth = workoutHistory.filter(r => { const d = new Date(r.date); return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() })
 
             const activityItems = [
-              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>, label: '운동 기록', sub: `이번 달 ${thisMonth.length}회`, onClick: () => { switchTab('profile'); setProfileGrid('tagged') } },
+              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>, label: '운동 기록', sub: `이번 달 ${thisMonth.length}회`, onClick: () => navigate('/mypage/workout-history') },
               { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '온라인 강의', sub: `${classes.length}강의 수강 중`, onClick: () => navigate('/online-class') },
               { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, label: '내가 참여한 모임', sub: `${myMeetups.length}개 참여중`, onClick: () => navigate('/activity') },
               { icon: <IconCalendarCheck className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '챌린지', sub: '', onClick: () => navigate('/challenge') },
