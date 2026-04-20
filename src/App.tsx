@@ -13,7 +13,9 @@ import {
   MembershipPage,
   LessonPage,
   OnlineClassPage,
+  MyOnlineClassesPage,
   ActivityPage,
+  MyMeetupsPage,
   ShopPage,
   AttendancePage,
   ChallengePage,
@@ -70,7 +72,9 @@ export const App = () => {
         <Route path="/membership" element={<MembershipPage />} />
         <Route path="/lesson" element={<LessonPage />} />
         <Route path="/online-class" element={<OnlineClassPage />} />
+        <Route path="/online-class/my" element={<MyOnlineClassesPage />} />
         <Route path="/activity" element={<ActivityPage />} />
+        <Route path="/activity/my-meetups" element={<MyMeetupsPage />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/challenge" element={<ChallengePage />} />

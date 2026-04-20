@@ -102,7 +102,7 @@ export const QrScanner = () => {
         {scanResult ? (
           <div className="bg-white rounded-card px-6 py-4 text-center mb-5 w-full">
             <div className="flex items-center justify-center gap-2 mb-1">
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-green-500 stroke-2">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-[#10b981] stroke-2">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
               <span className="text-body font-semibold text-ink">입장이 확인되었습니다</span>

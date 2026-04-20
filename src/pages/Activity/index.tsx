@@ -57,9 +57,9 @@ const RouteMap = memo(({ route, location: loc }: { route: number[][]; location: 
           {tiles.map(t => <img key={t.key} src={t.url} alt="" className="w-full h-full object-cover" draggable={false} loading="lazy" />)}
         </div>
         <svg viewBox={`0 0 ${W} ${H}`} className="absolute inset-0 w-full h-full">
-          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="8" strokeOpacity="0.2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d={pathD} fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx={startPt.x} cy={startPt.y} r="8" fill="#22c55e" />
+          <path d={pathD} fill="none" stroke="#10b981" strokeWidth="8" strokeOpacity="0.2" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke="#10b981" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx={startPt.x} cy={startPt.y} r="8" fill="#10b981" />
           <circle cx={startPt.x} cy={startPt.y} r="4" fill="white" />
           <circle cx={endPt.x} cy={endPt.y} r="8" fill="#ef4444" />
           <circle cx={endPt.x} cy={endPt.y} r="4" fill="white" />

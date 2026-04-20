@@ -472,8 +472,8 @@ export const MyPage = () => {
 
             const activityItems = [
               { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>, label: '운동 기록', sub: `이번 달 ${thisMonth.length}회`, onClick: () => navigate('/mypage/workout-history') },
-              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '온라인 강의', sub: `${classes.length}강의 수강 중`, onClick: () => navigate('/online-class') },
-              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, label: '내가 참여한 모임', sub: `${myMeetups.length}개 참여중`, onClick: () => navigate('/activity') },
+              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>, label: '온라인 강의', sub: `${classes.length}강의 수강 중`, onClick: () => navigate('/online-class/my') },
+              { icon: <svg viewBox="0 0 24 24" className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5] fill-none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, label: '내가 참여한 모임', sub: `${myMeetups.length}개 참여중`, onClick: () => navigate('/activity/my-meetups') },
               { icon: <IconCalendarCheck className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '챌린지', sub: '', onClick: () => navigate('/challenge') },
             ]
 

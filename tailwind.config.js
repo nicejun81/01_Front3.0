@@ -17,7 +17,7 @@ export default {
         },
         accent: {
           purple: '#7F56D9',
-          green: '#00FF63',
+          green: '#10b981',
         },
         surface: {
           DEFAULT: '#ffffff',
@@ -38,11 +38,11 @@ export default {
         category: {
           bareton: { bg: '#fce7f3', text: '#db2777' },
           hit35: { bg: '#dbeafe', text: '#2563eb' },
-          gymground: { bg: '#dcfce7', text: '#16a34a' },
+          gymground: { bg: '#d1fae5', text: '#059669' },
         },
         semantic: {
           star: '#FFD700',
-          online: '#22c55e',
+          online: '#10b981',
           like: '#ff3040',
           kakao: '#FEE500',
         },
