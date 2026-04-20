@@ -48,6 +48,7 @@ import {
   AddOnsPage,
   CompletePage,
   PurchaseDocsPage,
+  PurchaseListPage,
   GroupLessonDetailPage,
   BranchSelectPage,
   ReservationPage,
@@ -100,6 +101,7 @@ export const App = () => {
         <Route path="/chat/:id" element={<ChatRoomPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/complete" element={<CompletePage />} />
+        <Route path="/purchase" element={<PurchaseListPage />} />
         <Route path="/purchase/docs" element={<PurchaseDocsPage />} />
         <Route path="/branch" element={<BranchSelectPage />} />
         <Route path="/reservation" element={<ReservationPage />} />

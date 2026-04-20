@@ -13,10 +13,13 @@ type Meetup = {
   id: number
   title: string
   category: string
+  description: string
   schedule: string
   location: string
   imageUrl: string
   role: Role
+  host: { name: string; imageUrl: string }
+  memberAvatars: string[]
   memberCount: number
   maxMembers: number
   nextMeetingAt: string // ISO
@@ -33,12 +36,19 @@ const addDays = (n: number, h = 7, m = 0) => {
 const myMeetups: Meetup[] = [
   {
     id: 2,
-    title: '모닝 바레톤 클럽',
+    title: '모닝 바레톤 클럽 🧘‍♀️ 매주 수/금 아침 함께해요',
     category: '바레톤',
+    description: '바쁜 일상 속 가벼운 아침 운동! 초보도 환영하는 바레톤 클럽이에요.',
     schedule: '매주 수/금 오전 6시',
     location: '바디채널 강남점',
     imageUrl: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=400&fit=crop',
     role: '모임장',
+    host: { name: '나 (모임장)', imageUrl: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=50&h=50&fit=crop&crop=face' },
+    memberAvatars: [
+      'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=50&h=50&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=50&h=50&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1597347316205-36f6c451902a?w=50&h=50&fit=crop&crop=face',
+    ],
     memberCount: 12,
     maxMembers: 15,
     nextMeetingAt: addDays(2, 6, 0),
@@ -47,12 +57,19 @@ const myMeetups: Meetup[] = [
   },
   {
     id: 1,
-    title: '강남 러닝크루',
+    title: '강남 러닝크루 🏃 매주 토요일 아침 달리기',
     category: '러닝',
+    description: '함께 뛰면 더 즐거워요! 초보부터 중급까지 누구나 환영하는 러닝 크루입니다.',
     schedule: '매주 토요일 오전 7시',
     location: '한강공원 잠원지구',
     imageUrl: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&h=400&fit=crop',
     role: '멤버',
+    host: { name: '김트레이너', imageUrl: 'https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=50&h=50&fit=crop&crop=face' },
+    memberAvatars: [
+      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=50&h=50&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=50&h=50&fit=crop&crop=face',
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=50&h=50&fit=crop&crop=face',
+    ],
     memberCount: 24,
     maxMembers: 30,
     nextMeetingAt: addDays(5, 7, 0),
@@ -102,15 +119,6 @@ const IconLocation = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
     <circle cx="12" cy="10" r="3" />
-  </svg>
-)
-
-const IconUsers = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
   </svg>
 )
 
@@ -278,7 +286,7 @@ export const MyMeetupsPage = () => {
             return (
               <li key={m.id}>
                 <div className="bg-surface border border-border rounded-card-lg overflow-hidden">
-                  {/* 메인 영역 */}
+                  {/* 메인 영역 — 가로형 (썸네일 좌 + 정보 우) */}
                   <button
                     onClick={() => navigate(`/meetup/${m.id}`)}
                     className="w-full flex gap-3 p-3 text-left hover:bg-surface-subtle active:bg-surface-muted transition-colors"
@@ -305,7 +313,6 @@ export const MyMeetupsPage = () => {
                       </div>
                       <h3 className="text-body font-semibold text-ink line-clamp-1 mb-1">{m.title}</h3>
 
-                      {/* 다음 모임 */}
                       <div className="flex items-center gap-1.5 text-caption text-ink-secondary tabular-nums mb-1">
                         <IconClock className="w-3.5 h-3.5 stroke-ink-tertiary flex-shrink-0" />
                         <span className="font-semibold">
@@ -319,7 +326,11 @@ export const MyMeetupsPage = () => {
 
                       {/* 멤버 진행률 */}
                       <div className="mt-auto pt-2 flex items-center gap-1.5">
-                        <IconUsers className="w-3.5 h-3.5 stroke-ink-tertiary flex-shrink-0" />
+                        <div className="flex -space-x-1">
+                          {m.memberAvatars.slice(0, 3).map((url, i) => (
+                            <img key={i} src={url} alt="" className="w-4 h-4 rounded-full object-cover border-[1.5px] border-white" />
+                          ))}
+                        </div>
                         <div className="flex-1 h-1 bg-surface-muted rounded-full overflow-hidden">
                           <div className="h-full bg-primary rounded-full" style={{ width: `${fillRate}%` }} />
                         </div>
@@ -333,7 +344,7 @@ export const MyMeetupsPage = () => {
                   {/* 빠른 액션 */}
                   <div className="flex border-t border-border-light divide-x divide-border-light">
                     <button
-                      onClick={(e) => { e.stopPropagation(); navigate(`/chat/${m.id}`) }}
+                      onClick={() => navigate(`/chat/${m.id}`)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-caption font-semibold text-ink-secondary hover:bg-surface-subtle transition-colors"
                     >
                       <IconChat className="w-4 h-4 stroke-ink-secondary" />
@@ -345,7 +356,7 @@ export const MyMeetupsPage = () => {
                       )}
                     </button>
                     <button
-                      onClick={(e) => { e.stopPropagation(); navigate(`/meetup/${m.id}`) }}
+                      onClick={() => navigate(`/meetup/${m.id}`)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-caption font-semibold text-ink-secondary hover:bg-surface-subtle transition-colors"
                     >
                       <IconCalendar className="w-4 h-4 stroke-ink-secondary" />

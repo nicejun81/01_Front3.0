@@ -33,11 +33,11 @@ const INSTA_REWARDS = [
 ]
 
 const RECENT_REVIEWS = [
-  { name: '김**', type: 'naver', date: '2026.04.14', content: '시설이 깔끔하고 트레이너분들이 친절해요!', reward: '5,000P', hasPhoto: true },
-  { name: '이**', type: 'instagram', date: '2026.04.13', content: '릴스로 운동 브이로그 업로드 완료', reward: '8,000P', hasPhoto: false },
-  { name: '박**', type: 'naver', date: '2026.04.12', content: '체계적인 PT 프로그램 덕분에 3개월만에 -5kg 성공', reward: '5,000P', hasPhoto: true },
-  { name: '최**', type: 'instagram', date: '2026.04.10', content: '오늘의 운동 기록! 바디채널 강남점 추천', reward: '5,000P', hasPhoto: false },
-  { name: '정**', type: 'naver', date: '2026.04.08', content: '위치도 좋고 기구도 다양해서 만족합니다', reward: '3,000P', hasPhoto: false },
+  { name: '김**', type: 'naver', date: '2026.04.14', content: '시설이 깔끔하고 트레이너분들이 친절해요!', reward: '5,000P', hasPhoto: true, imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face' },
+  { name: '이**', type: 'instagram', date: '2026.04.13', content: '릴스로 운동 브이로그 업로드 완료', reward: '8,000P', hasPhoto: false, imageUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop&crop=face' },
+  { name: '박**', type: 'naver', date: '2026.04.12', content: '체계적인 PT 프로그램 덕분에 3개월만에 -5kg 성공', reward: '5,000P', hasPhoto: true, imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face' },
+  { name: '최**', type: 'instagram', date: '2026.04.10', content: '오늘의 운동 기록! 바디채널 강남점 추천', reward: '5,000P', hasPhoto: false, imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=face' },
+  { name: '정**', type: 'naver', date: '2026.04.08', content: '위치도 좋고 기구도 다양해서 만족합니다', reward: '3,000P', hasPhoto: false, imageUrl: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=100&h=100&fit=crop&crop=face' },
 ]
 
 export const ReviewEventPage = () => {
@@ -180,10 +180,13 @@ export const ReviewEventPage = () => {
         <div className="flex flex-col gap-2">
           {RECENT_REVIEWS.filter(r => r.type === tab).map((r, i) => (
             <div key={i} className="flex items-start gap-3 p-3 bg-surface-muted rounded-card">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-caption font-bold text-white ${
-                r.type === 'naver' ? 'bg-[#03C75A]' : 'bg-[#E4405F]'
-              }`}>
-                {r.type === 'naver' ? 'N' : 'IG'}
+              <div className="relative shrink-0">
+                <img src={r.imageUrl} alt={r.name} className="w-8 h-8 rounded-full object-cover bg-surface-muted" loading="lazy" />
+                <span className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2 border-surface-muted ${
+                  r.type === 'naver' ? 'bg-[#03C75A]' : 'bg-[#E4405F]'
+                }`}>
+                  {r.type === 'naver' ? 'N' : 'i'}
+                </span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">

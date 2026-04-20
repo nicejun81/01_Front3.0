@@ -65,6 +65,8 @@ export const CheckoutPage = () => {
   const productName = searchParams.get('name') || 'PT 20회 패키지'
   const productPrice = searchParams.get('price') || '990,000'
   const gymName = searchParams.get('gym') || '바디채널 강남점'
+  const mode = searchParams.get('mode') // 'charge' 등
+  const isCharge = mode === 'charge'
   const priceNum = parseInt(productPrice.replace(/[^0-9]/g, ''))
 
   const [payment, setPayment] = useState<PaymentMethod>('kakao')
@@ -89,7 +91,7 @@ export const CheckoutPage = () => {
   const cashUsed = Math.min(cashInput, maxCash)
   const maxPoint = Math.min(POINT_BALANCE, priceNum - couponDiscount - cashUsed)
   const pointUsed = Math.min(pointInput, maxPoint)
-  const totalDiscount = couponDiscount + cashUsed + pointUsed
+  const totalDiscount = isCharge ? 0 : couponDiscount + cashUsed + pointUsed
   const finalPrice = Math.max(0, priceNum - totalDiscount)
 
   const toggleAll = () => {
@@ -143,9 +145,10 @@ export const CheckoutPage = () => {
           ))}
         </div>
 
-        <Divider />
+        {!isCharge && <Divider />}
 
-        {/* ━━ 할인 ━━ */}
+        {/* ━━ 할인 (충전 모드 제외) ━━ */}
+        {!isCharge && (
         <div className="bg-surface px-page pt-4 pb-3">
           <SectionTitle>할인</SectionTitle>
           {/* 캐시 */}
@@ -242,6 +245,7 @@ export const CheckoutPage = () => {
             )}
           </div>
         </div>
+        )}
 
         <Divider />
 
@@ -320,28 +324,28 @@ export const CheckoutPage = () => {
         <div className="bg-surface px-page pt-4 pb-4">
           <SectionTitle>결제 금액</SectionTitle>
           <div className="flex justify-between py-1.5">
-            <span className="text-body text-ink-tertiary">상품 금액</span>
+            <span className="text-body text-ink-tertiary">{isCharge ? '충전 금액' : '상품 금액'}</span>
             <span className="text-body text-ink">{priceNum.toLocaleString()}원</span>
           </div>
-          {cashUsed > 0 && (
+          {!isCharge && cashUsed > 0 && (
             <div className="flex justify-between py-1.5">
               <span className="text-body text-ink-tertiary">캐시 사용</span>
               <span className="text-body text-primary font-semibold">-{cashUsed.toLocaleString()}원</span>
             </div>
           )}
-          {couponDiscount > 0 && (
+          {!isCharge && couponDiscount > 0 && (
             <div className="flex justify-between py-1.5">
               <span className="text-body text-ink-tertiary">쿠폰 할인</span>
               <span className="text-body text-primary font-semibold">-{couponDiscount.toLocaleString()}원</span>
             </div>
           )}
-          {pointUsed > 0 && (
+          {!isCharge && pointUsed > 0 && (
             <div className="flex justify-between py-1.5">
               <span className="text-body text-ink-tertiary">포인트 사용</span>
               <span className="text-body text-primary font-semibold">-{pointUsed.toLocaleString()}원</span>
             </div>
           )}
-          {totalDiscount === 0 && (
+          {!isCharge && totalDiscount === 0 && (
             <div className="flex justify-between py-1.5">
               <span className="text-body text-ink-tertiary">할인</span>
               <span className="text-body text-ink-disabled">없음</span>
@@ -397,7 +401,7 @@ export const CheckoutPage = () => {
           <p className="text-title text-ink">{finalPrice.toLocaleString()}원</p>
         </div>
         <button
-          onClick={() => navigate(`/complete?name=${encodeURIComponent(productName)}&price=${encodeURIComponent(finalPrice.toLocaleString())}&gym=${encodeURIComponent(gymName)}&method=${encodeURIComponent(selectedMethod?.label || '')}`)}
+          onClick={() => navigate(`/complete?name=${encodeURIComponent(productName)}&price=${encodeURIComponent(finalPrice.toLocaleString())}&gym=${encodeURIComponent(gymName)}&method=${encodeURIComponent(selectedMethod?.label || '')}${isCharge ? '&mode=charge' : ''}`)}
           disabled={!agreed}
           className={`flex-shrink-0 px-8 py-3.5 rounded-card text-body font-bold transition-colors ${
             agreed

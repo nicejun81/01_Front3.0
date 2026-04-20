@@ -3,9 +3,9 @@ import { PageLayout, SubPageHeader } from '../../components'
 import { IconUserPlus } from '../../components/Icons'
 
 const invitedFriends = [
-  { name: '이**', date: '2026.04.10', status: '가입완료', point: 5000 },
-  { name: '박**', date: '2026.03.22', status: '가입완료', point: 5000 },
-  { name: '최**', date: '2026.03.15', status: '가입완료', point: 5000 },
+  { name: '이**', date: '2026.04.10', status: '가입완료', point: 5000, imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face' },
+  { name: '박**', date: '2026.03.22', status: '가입완료', point: 5000, imageUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop&crop=face' },
+  { name: '최**', date: '2026.03.15', status: '가입완료', point: 5000, imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face' },
 ]
 
 const STEPS = [
@@ -118,9 +118,7 @@ export const InvitePage = () => {
             {invitedFriends.map((f, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-surface-muted rounded-card">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary-50 flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" className="w-4.5 h-4.5 stroke-primary stroke-[1.5] fill-none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  </div>
+                  <img src={f.imageUrl} alt={f.name} className="w-9 h-9 rounded-full object-cover bg-surface-muted" loading="lazy" />
                   <div>
                     <div className="text-body font-semibold text-ink">{f.name}</div>
                     <div className="text-caption text-ink-placeholder">{f.date}</div>

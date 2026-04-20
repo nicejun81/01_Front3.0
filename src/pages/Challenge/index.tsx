@@ -66,6 +66,9 @@ const STATUS_LABEL: Record<string, { text: string; style: string }> = {
   completed: { text: '완료', style: 'bg-ink-disabled text-ink-tertiary' },
 }
 
+// 실제 라우트가 존재하는 챌린지 href만 클릭 가능
+const VALID_HREFS = new Set(['/attendance'])
+
 export const ChallengePage = () => {
   const navigate = useNavigate()
 
@@ -76,11 +79,10 @@ export const ChallengePage = () => {
   const ChallengeCard = ({ c }: { c: typeof challenges[0] }) => {
     const pct = c.progress.total > 0 ? Math.round((c.progress.current / c.progress.total) * 100) : 0
     const statusInfo = STATUS_LABEL[c.status]
-    return (
-      <button
-        onClick={() => navigate(c.href)}
-        className="w-full text-left bg-surface rounded-card-lg border border-border p-card-lg hover:border-ink-placeholder transition-colors"
-      >
+    const isCompleted = c.status === 'completed'
+    const isClickable = !isCompleted && VALID_HREFS.has(c.href)
+    const content = (
+      <>
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className={`w-9 h-9 rounded-card flex items-center justify-center bg-gradient-to-br ${c.gradient}`}>
@@ -110,8 +112,25 @@ export const ChallengePage = () => {
         )}
         <div className="flex items-center justify-between">
           <span className="text-caption text-ink-placeholder">리워드: {c.reward}</span>
-          <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />
+          {isClickable && <IconChevronRight className="w-4 h-4 stroke-ink-disabled stroke-[1.5]" />}
         </div>
+      </>
+    )
+
+    if (!isClickable) {
+      return (
+        <div className={`w-full text-left rounded-card-lg border border-border p-card-lg ${isCompleted ? 'bg-surface-subtle opacity-75' : 'bg-surface'}`}>
+          {content}
+        </div>
+      )
+    }
+
+    return (
+      <button
+        onClick={() => navigate(c.href)}
+        className="w-full text-left bg-surface rounded-card-lg border border-border p-card-lg hover:border-ink-placeholder transition-colors"
+      >
+        {content}
       </button>
     )
   }

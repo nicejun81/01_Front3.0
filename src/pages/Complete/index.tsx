@@ -9,6 +9,8 @@ export const CompletePage = () => {
   const productPrice = searchParams.get('price') || '990,000'
   const gymName = searchParams.get('gym') || '바디채널 강남점'
   const paymentMethod = searchParams.get('method') || '카카오페이'
+  const mode = searchParams.get('mode') // 'charge' 등
+  const isCharge = mode === 'charge'
 
   const orderNumber = useMemo(() => {
     const now = new Date()
@@ -41,8 +43,10 @@ export const CompletePage = () => {
         </div>
 
         {/* ── 타이틀 ── */}
-        <h1 className="text-heading text-ink text-center">결제가 완료되었습니다!</h1>
-        <p className="text-body text-ink-tertiary text-center mt-2">이용권이 마이페이지에 등록되었습니다</p>
+        <h1 className="text-heading text-ink text-center">{isCharge ? '캐시 충전이 완료되었습니다!' : '결제가 완료되었습니다!'}</h1>
+        <p className="text-body text-ink-tertiary text-center mt-2">
+          {isCharge ? '충전한 캐시를 바로 사용해보세요' : '이용권이 마이페이지에 등록되었습니다'}
+        </p>
 
         {/* ── 주문 정보 카드 ── */}
         <div className="w-full mt-8 bg-surface-muted rounded-card-lg p-card-lg">
@@ -54,7 +58,7 @@ export const CompletePage = () => {
           {/* 상품 */}
           <div className="flex items-center gap-3 pb-3 mb-3 border-b border-border">
             <div className="w-12 h-12 bg-primary-50 rounded-card flex items-center justify-center flex-shrink-0">
-              <span className="text-[22px]">🏋️</span>
+              <span className="text-[22px]">{isCharge ? '💰' : '🏋️'}</span>
             </div>
             <div className="min-w-0">
               <p className="text-body font-bold text-ink">{productName}</p>
@@ -82,21 +86,22 @@ export const CompletePage = () => {
             <svg viewBox="0 0 20 20" className="w-[18px] h-[18px] fill-primary flex-shrink-0">
               <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm.75 4.75a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0v-4.5zm0 7.5a.75.75 0 00-1.5 0v.01a.75.75 0 001.5 0V14.25z" />
             </svg>
-            <span className="text-label font-bold text-primary">이용 안내</span>
+            <span className="text-label font-bold text-primary">{isCharge ? '충전 안내' : '이용 안내'}</span>
           </div>
           <p className="text-caption text-ink-secondary leading-relaxed">
-            구매하신 이용권은 마이페이지 &gt; 보유 이용권에서 확인하실 수 있습니다.
-            이용권 사용은 헬스장 방문 시 앱을 통해 QR코드를 제시해 주세요.
+            {isCharge
+              ? '충전한 캐시는 마이페이지 > 캐시에서 확인하실 수 있으며, 결제 시 자동으로 사용 가능합니다.'
+              : '구매하신 이용권은 마이페이지 > 보유 이용권에서 확인하실 수 있습니다. 이용권 사용은 헬스장 방문 시 앱을 통해 QR코드를 제시해 주세요.'}
           </p>
         </div>
 
         {/* ── 버튼 ── */}
         <div className="w-full mt-8 flex flex-col gap-3">
           <button
-            onClick={() => navigate('/mypage?tab=purchase')}
+            onClick={() => navigate(isCharge ? '/wallet/cash' : '/mypage?tab=purchase')}
             className="w-full py-4 bg-primary text-white text-body font-bold rounded-card hover:bg-primary-dark transition-colors"
           >
-            이용권 확인하기
+            {isCharge ? '캐시 내역 보기' : '이용권 확인하기'}
           </button>
           <button
             onClick={() => navigate('/')}

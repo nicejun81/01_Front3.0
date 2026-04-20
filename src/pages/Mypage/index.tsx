@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { PageLayout, SubPageHeader, ProfileHeader } from '../../components'
 import {
@@ -155,6 +155,14 @@ export const MyPage = () => {
     return mock
   })
   const [reserveDateIdx, setReserveDateIdx] = useState(-1) // -1 = 아직 초기화 안됨, 오늘로 자동 설정
+  const selectedDateRef = useRef<HTMLButtonElement | null>(null)
+
+  // 선택된 날짜 탭을 가운데로 자동 스크롤 (오늘이 끝에 있어도 보이게)
+  useEffect(() => {
+    if (selectedDateRef.current) {
+      selectedDateRef.current.scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'center' })
+    }
+  }, [reserveDateIdx, activeTab])
 
   const header = (
     <SubPageHeader
@@ -259,13 +267,40 @@ export const MyPage = () => {
             </div>
             <div className="flex items-center bg-surface-muted rounded-card-lg divide-x divide-border">
               {[
-                { value: '15,000', label: '캐시', href: '/wallet/cash' },
-                { value: '2,500', label: '포인트', href: '/wallet/point' },
-                { value: '3', label: '쿠폰', href: '/wallet/coupon' },
+                {
+                  value: '15,000', label: '캐시', href: '/wallet/cash',
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-primary" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <rect x="2" y="6" width="20" height="12" rx="2" />
+                      <circle cx="12" cy="12" r="2.5" />
+                      <path d="M6 10v.01M18 10v.01M6 14v.01M18 14v.01" strokeLinecap="round" />
+                    </svg>
+                  ),
+                },
+                {
+                  value: '2,500', label: '포인트', href: '/wallet/point',
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 fill-primary">
+                      <path d="M12 2l2.6 6.5h6.9l-5.6 4 2.1 6.5L12 15l-6 4 2.1-6.5-5.6-4h6.9L12 2z" />
+                    </svg>
+                  ),
+                },
+                {
+                  value: '3', label: '쿠폰', href: '/wallet/coupon',
+                  icon: (
+                    <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-primary" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z" />
+                      <path d="M9 7v10" strokeDasharray="2 2" />
+                    </svg>
+                  ),
+                },
               ].map((stat) => (
                 <button key={stat.label} onClick={() => navigate(stat.href)} className="flex-1 py-3.5 text-center hover:bg-border-light transition-colors first:rounded-l-card-lg last:rounded-r-card-lg">
                   <div className="text-body font-bold text-ink tabular-nums">{stat.value}</div>
-                  <div className="text-caption text-ink-tertiary mt-0.5">{stat.label}</div>
+                  <div className="flex items-center justify-center gap-1 mt-0.5">
+                    {stat.icon}
+                    <div className="text-caption text-ink-tertiary">{stat.label}</div>
+                  </div>
                 </button>
               ))}
             </div>
@@ -339,8 +374,10 @@ export const MyPage = () => {
           <div className="px-page">
           {(() => {
             const dayNames = ['일', '월', '화', '수', '목', '금', '토']
-            // 예약에서 고유 날짜 추출 (과거 포함)
-            const uniqueDates = [...new Set(reservations.map(r => r.date))]
+            const todayDate = new Date(); todayDate.setHours(0, 0, 0, 0)
+            const todayKey = `${todayDate.getFullYear()}년 ${todayDate.getMonth() + 1}월 ${todayDate.getDate()}일(${dayNames[todayDate.getDay()]})`
+            // 예약에서 고유 날짜 추출 + 오늘 항상 포함
+            const uniqueDates = [...new Set([todayKey, ...reservations.map(r => r.date)])]
             // 날짜 파싱해서 정렬
             const dateTabs = uniqueDates.map(dateStr => {
               const match = dateStr.match(/(\d+)년 (\d+)월 (\d+)일/)
@@ -348,11 +385,9 @@ export const MyPage = () => {
               const m = match ? +match[2] - 1 : 0
               const d = match ? +match[3] : 1
               const dateObj = new Date(y, m, d)
-              const today = new Date()
-              today.setHours(0, 0, 0, 0)
               dateObj.setHours(0, 0, 0, 0)
-              const isToday = dateObj.getTime() === today.getTime()
-              const isPast = dateObj.getTime() < today.getTime()
+              const isToday = dateObj.getTime() === todayDate.getTime()
+              const isPast = dateObj.getTime() < todayDate.getTime()
               return {
                 label: `${dateObj.getMonth() + 1}/${dateObj.getDate()}`,
                 day: dayNames[dateObj.getDay()],
@@ -363,19 +398,8 @@ export const MyPage = () => {
               }
             }).sort((a, b) => a.sortKey - b.sortKey)
 
-            if (dateTabs.length === 0) {
-              return (
-                <div className="py-section">
-                  <h3 className="text-body font-bold text-ink mb-3">내 예약</h3>
-                  <div className="py-8 text-center">
-                    <p className="text-caption text-ink-placeholder">예약 내역이 없습니다</p>
-                  </div>
-                </div>
-              )
-            }
-
-            // 기본 선택: 오늘 또는 가장 가까운 미래
-            const todayIdx = dateTabs.findIndex(d => d.isToday) >= 0 ? dateTabs.findIndex(d => d.isToday) : dateTabs.findIndex(d => !d.isPast)
+            // 기본 선택: 오늘
+            const todayIdx = dateTabs.findIndex(d => d.isToday)
             const safeIdx = reserveDateIdx === -1 ? (todayIdx >= 0 ? todayIdx : 0) : Math.min(reserveDateIdx, dateTabs.length - 1)
             const selectedDateKey = dateTabs[safeIdx >= 0 ? safeIdx : 0].key
             const filtered = reservations.filter(r => r.date === selectedDateKey)
@@ -399,6 +423,7 @@ export const MyPage = () => {
                   {dateTabs.map((d, i) => (
                     <button
                       key={d.key}
+                      ref={safeIdx === i ? selectedDateRef : null}
                       onClick={() => setReserveDateIdx(i)}
                       className={`flex-shrink-0 w-[52px] py-2 rounded-xl text-center transition-colors relative ${
                         safeIdx === i
@@ -414,10 +439,21 @@ export const MyPage = () => {
                   ))}
                 </div>
                 <div className="flex flex-col gap-2">
+                  {filtered.length === 0 && (
+                    <div className="py-8 text-center rounded-card bg-surface-subtle">
+                      <p className="text-caption text-ink-placeholder">
+                        {selectedTab.isToday ? '오늘 예약 내역이 없습니다' : '이 날의 예약 내역이 없습니다'}
+                      </p>
+                    </div>
+                  )}
                   {filtered.map((r) => {
                     const isPast = selectedTab.isPast
                     return (
-                      <div key={r.id} className={`flex items-center gap-3 p-card-lg rounded-card ${isPast ? 'bg-surface-subtle' : 'bg-surface-muted'}`}>
+                      <button
+                        key={r.id}
+                        onClick={() => navigate(`/reservation?trainer=${encodeURIComponent(r.trainer)}&lesson=${encodeURIComponent(r.lesson)}&time=${encodeURIComponent(r.time)}&date=${encodeURIComponent(r.date)}&id=${r.id}`)}
+                        className={`w-full text-left flex items-center gap-3 p-card-lg rounded-card transition-colors ${isPast ? 'bg-surface-subtle hover:bg-surface-muted' : 'bg-surface-muted hover:bg-primary-50'}`}
+                      >
                         <div className={`w-10 h-10 rounded-card flex items-center justify-center flex-shrink-0 ${isPast ? 'bg-surface-muted' : 'bg-primary-50'}`}>
                           <span className={`text-caption font-bold ${isPast ? 'text-ink-placeholder' : 'text-primary'}`}>{r.lesson}</span>
                         </div>
@@ -437,8 +473,10 @@ export const MyPage = () => {
                         {isPast ? (
                           <span className="px-2.5 py-1 text-caption font-bold text-ink-disabled">완료</span>
                         ) : (
-                          <button
-                            onClick={() => {
+                          <span
+                            role="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
                               const updated = reservations.filter(x => x.id !== r.id)
                               localStorage.setItem('reservations', JSON.stringify(updated))
                               setReservations(updated)
@@ -446,9 +484,9 @@ export const MyPage = () => {
                             className="px-2.5 py-1 text-caption font-bold text-ink-placeholder border border-border rounded-pill hover:text-semantic-like hover:border-semantic-like transition-colors flex-shrink-0"
                           >
                             취소
-                          </button>
+                          </span>
                         )}
-                      </div>
+                      </button>
                     )
                   })}
                 </div>

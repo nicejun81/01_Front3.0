@@ -4,7 +4,7 @@ import { PageLayout, SubPageHeader, FilterTabs } from '../../components'
 import { IconSearch, IconHeart, IconMessage, IconCalendar, IconMapPin, IconShare } from '../../components/Icons'
 
 const Stat = memo(({ label, value, unit, divider }: { label: string; value: string; unit?: string; divider?: boolean }) => (
-  <div className={divider ? 'border-x border-white/10 px-3' : ''}>
+  <div className={`flex flex-col items-center justify-center text-center ${divider ? 'border-x border-white/10 px-3' : ''}`}>
     <div className="text-heading font-extrabold leading-none tabular-nums">
       {value}
       {unit && <span className="text-label font-semibold text-white/50 ml-1">{unit}</span>}
@@ -1314,32 +1314,32 @@ export const ActivityPage = () => {
 
                 {/* Splits (running) or Exercises (workout) */}
                 {isRunning ? (
-                  <div>
-                    <SectionLabel>구간 기록</SectionLabel>
-                    <div className="p-4 rounded-card-lg bg-white/5 border border-white/10">
-                      <div className="grid grid-cols-[40px_1fr_60px] gap-3 pb-2 mb-1 border-b border-white/10 text-caption text-white/50">
-                        <span>구간</span>
-                        <span>페이스 그래프</span>
-                        <span className="text-right">페이스</span>
-                      </div>
-                      {feed.running!.splits.map((split) => {
-                        const paceSeconds = parseInt(split.pace) * 60 + parseInt(split.pace.split("'")[1])
-                        const maxPace = 420
-                        const minPace = 270
-                        const barWidth = Math.max(20, Math.min(100, ((maxPace - paceSeconds) / (maxPace - minPace)) * 100))
-                        return (
-                          <div key={split.km} className="grid grid-cols-[40px_1fr_60px] gap-3 items-center py-1.5 border-t border-white/5 first:border-t-0">
-                            <span className="text-label text-white/60 tabular-nums">{split.km}km</span>
-                            <div className="h-4 flex items-center">
-                              <div
-                                className="h-full rounded-sm bg-accent-green/70"
-                                style={{ width: `${barWidth}%` }}
-                              />
+                  <div className="rounded-card-lg bg-white/5 border border-white/10 overflow-hidden">
+                    <div className="px-4 py-2.5 border-b border-white/10 flex items-center justify-between">
+                      <span className="text-label font-semibold text-white">구간 기록</span>
+                      <span className="text-caption text-white/50 tabular-nums">{feed.running!.splits.length}km</span>
+                    </div>
+                    <div className="p-3">
+                      {(() => {
+                        const allSec = feed.running!.splits.map(s => {
+                          const m = s.pace.match(/(\d+)'(\d+)/); return m ? Number(m[1]) * 60 + Number(m[2]) : 0
+                        })
+                        const minSec = Math.min(...allSec), maxSec = Math.max(...allSec)
+                        return feed.running!.splits.map(split => {
+                          const cur = (() => { const m = split.pace.match(/(\d+)'(\d+)/); return m ? Number(m[1]) * 60 + Number(m[2]) : 0 })()
+                          const ratio = maxSec === minSec ? 1 : (maxSec - cur) / (maxSec - minSec)
+                          const width = 30 + ratio * 70
+                          return (
+                            <div key={split.km} className="grid grid-cols-[40px_1fr_60px] gap-3 items-center py-1.5">
+                              <span className="text-caption text-white/60 tabular-nums">{split.km}km</span>
+                              <div className="h-2.5 flex items-center bg-white/10 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-accent-green" style={{ width: `${width}%` }} />
+                              </div>
+                              <span className="text-caption font-bold text-white text-right tabular-nums">{split.pace}</span>
                             </div>
-                            <span className="text-label font-semibold text-white text-right tabular-nums">{split.pace}</span>
-                          </div>
-                        )
-                      })}
+                          )
+                        })
+                      })()}
                     </div>
                   </div>
                 ) : (
