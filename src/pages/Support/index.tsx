@@ -1,7 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { PageLayout, SubPageHeader, FilterTabs } from '../../components'
-import { IconSearch, IconChevronRight, IconMessage, IconX, IconClock } from '../../components/Icons'
+import { IconSearch, IconChevronRight, IconX, IconClock } from '../../components/Icons'
 
 type Category = '전체' | '결제·환불' | '예약·이용' | '회원권' | '앱 사용' | '이벤트'
 const CATEGORIES: Category[] = ['전체', '결제·환불', '예약·이용', '회원권', '앱 사용', '이벤트']
@@ -60,10 +59,13 @@ const CHANNELS: Channel[] = [
   { id: 'phone', label: '전화 상담',   desc: '1588-0000',           accent: 'bg-ink text-white',     icon: ICON_PHONE },
 ]
 
-const CHANNEL_ACTION: Record<Channel['id'], { type: 'href'; value: string } | { type: 'route'; value: string } | { type: 'toast'; value: string }> = {
-  chat:  { type: 'route', value: '/chat' },
+const CHANNEL_ACTION: Record<Channel['id'], { type: 'href'; value: string } | { type: 'modal' } | { type: 'toast'; value: string }> = {
+  chat:  { type: 'modal' },
   phone: { type: 'href',  value: 'tel:1588-0000' },
 }
+
+const INQUIRY_CATEGORIES = ['결제·환불', '예약·이용', '회원권', '앱 사용', '이벤트', '기타'] as const
+type InquiryCategory = typeof INQUIRY_CATEGORIES[number]
 
 interface FaqItemProps {
   faq: Faq
@@ -122,12 +124,16 @@ const ChannelButton = memo(({ channel, onClick }: ChannelButtonProps) => (
 ChannelButton.displayName = 'ChannelButton'
 
 export const SupportPage = () => {
-  const navigate = useNavigate()
   const [category, setCategory] = useState<Category>('전체')
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [inquiryOpen, setInquiryOpen] = useState(false)
+  const [inqCategory, setInqCategory] = useState<InquiryCategory>('결제·환불')
+  const [inqTitle, setInqTitle] = useState('')
+  const [inqContent, setInqContent] = useState('')
+  const [inqEmail, setInqEmail] = useState('')
 
   // 검색 디바운스
   useEffect(() => {
@@ -152,12 +158,27 @@ export const SupportPage = () => {
     const action = CHANNEL_ACTION[id]
     if (action.type === 'href') {
       window.location.href = action.value
-    } else if (action.type === 'route') {
-      navigate(action.value)
+    } else if (action.type === 'modal') {
+      setInquiryOpen(true)
     } else {
       showToast(action.value)
     }
-  }, [navigate, showToast])
+  }, [showToast])
+
+  const closeInquiry = useCallback(() => setInquiryOpen(false), [])
+
+  const submitInquiry = useCallback(() => {
+    if (!inqTitle.trim() || !inqContent.trim()) {
+      showToast('제목과 내용을 입력해 주세요')
+      return
+    }
+    setInquiryOpen(false)
+    setInqTitle('')
+    setInqContent('')
+    setInqEmail('')
+    setInqCategory('결제·환불')
+    showToast('문의가 접수되었어요. 24시간 내 답변드릴게요')
+  }, [inqTitle, inqContent, showToast])
 
   const clearQuery = useCallback(() => setQuery(''), [])
 
@@ -174,8 +195,6 @@ export const SupportPage = () => {
     setCategory(k as Category)
     setOpenId(null)
   }, [])
-
-  const openChat = useCallback(() => handleChannel('chat'), [handleChannel])
 
   return (
     <PageLayout
@@ -266,25 +285,8 @@ export const SupportPage = () => {
         )}
       </div>
 
-      {/* 1:1 문의 유도 배너 */}
-      <div className="px-page pt-2 pb-3">
-        <button
-          onClick={openChat}
-          className="w-full flex items-center gap-3 p-4 rounded-card-lg bg-ink text-white hover:bg-ink/85 active:scale-[0.99] transition-all"
-        >
-          <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-            <IconMessage className="w-5 h-5 stroke-white stroke-[1.8]" />
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <div className="text-label font-extrabold">원하는 답을 찾지 못하셨나요?</div>
-            <div className="text-caption text-white/70 mt-0.5">상담사에게 직접 문의하기</div>
-          </div>
-          <IconChevronRight className="w-5 h-5 stroke-white stroke-[1.8] flex-shrink-0" />
-        </button>
-      </div>
-
       {/* 기타 링크 */}
-      <div className="px-page pb-4">
+      <div className="px-page">
         <div className="bg-surface-muted rounded-card-lg p-4">
           <h4 className="text-label font-extrabold text-ink mb-1.5 tracking-wider">더 알아보기</h4>
           <ul className="flex flex-col">
@@ -299,6 +301,95 @@ export const SupportPage = () => {
           </ul>
         </div>
       </div>
+
+      {/* 1:1 문의 등록 모달 */}
+      {inquiryOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+          onClick={closeInquiry}
+        >
+          <div
+            className="w-full max-w-[480px] bg-surface rounded-t-card-lg pt-3 pb-5 animate-slide-up max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+            <div className="px-page">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-title font-extrabold text-ink">1:1 문의 남기기</h3>
+                <button
+                  onClick={closeInquiry}
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-muted transition-colors"
+                  aria-label="닫기"
+                >
+                  <IconX className="w-4 h-4 stroke-ink stroke-2" />
+                </button>
+              </div>
+              <p className="text-caption text-ink-tertiary mb-4">
+                평일 09–18시 접수 기준 24시간 이내 답변드려요
+              </p>
+
+              {/* 카테고리 */}
+              <label className="block text-caption font-bold text-ink-secondary mb-1.5">문의 유형</label>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {INQUIRY_CATEGORIES.map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setInqCategory(c)}
+                    className={`px-3 py-1.5 rounded-pill text-caption font-bold border transition-colors ${
+                      inqCategory === c
+                        ? 'bg-ink border-ink text-white'
+                        : 'bg-surface border-border text-ink hover:border-ink-placeholder'
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+
+              {/* 제목 */}
+              <label className="block text-caption font-bold text-ink-secondary mb-1.5">제목</label>
+              <input
+                value={inqTitle}
+                onChange={e => setInqTitle(e.target.value)}
+                placeholder="문의 제목을 입력해 주세요"
+                maxLength={50}
+                className="w-full px-3.5 py-2.5 mb-4 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder outline-none focus:ring-2 focus:ring-primary/40"
+              />
+
+              {/* 내용 */}
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-caption font-bold text-ink-secondary">문의 내용</label>
+                <span className="text-caption text-ink-placeholder tabular-nums">{inqContent.length}/500</span>
+              </div>
+              <textarea
+                value={inqContent}
+                onChange={e => setInqContent(e.target.value.slice(0, 500))}
+                placeholder="궁금한 내용을 자세히 적어주세요"
+                rows={5}
+                className="w-full px-3.5 py-2.5 mb-4 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder outline-none focus:ring-2 focus:ring-primary/40 resize-none leading-relaxed"
+              />
+
+              {/* 이메일 */}
+              <label className="block text-caption font-bold text-ink-secondary mb-1.5">답변받을 이메일 (선택)</label>
+              <input
+                type="email"
+                value={inqEmail}
+                onChange={e => setInqEmail(e.target.value)}
+                placeholder="email@example.com"
+                className="w-full px-3.5 py-2.5 mb-5 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder outline-none focus:ring-2 focus:ring-primary/40"
+              />
+
+              {/* 제출 */}
+              <button
+                onClick={submitInquiry}
+                className="w-full py-3 bg-primary text-white text-body font-extrabold rounded-card hover:bg-primary-dark active:scale-[0.99] transition-all"
+              >
+                문의 등록
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 bg-ink/95 text-white text-label font-semibold rounded-pill shadow-elevated animate-slide-up">
