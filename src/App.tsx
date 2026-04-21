@@ -56,6 +56,9 @@ import {
   WorkoutPage,
   AiProgramDetailPage,
   WorkoutPlayPage,
+  EventCouponPage,
+  FlashSalePage,
+  EventPage,
 } from './pages'
 import { QrScanner } from './components/QrScanner'
 
@@ -109,6 +112,9 @@ export const App = () => {
         <Route path="/workout/:id" element={<AiProgramDetailPage />} />
         <Route path="/workout/:id/play" element={<WorkoutPlayPage />} />
         <Route path="/wallet/:type" element={<WalletPage />} />
+        <Route path="/coupon" element={<EventCouponPage />} />
+        <Route path="/flash-sale" element={<FlashSalePage />} />
+        <Route path="/event" element={<EventPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/blocked" element={<BlockedPage />} />
         <Route path="/profile/:name" element={<UserProfilePage />} />
