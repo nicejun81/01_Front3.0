@@ -11,6 +11,7 @@ import {
   ComponentsShowcasePage,
   MyPage,
   MembershipPage,
+  MembershipDetailPage,
   LessonPage,
   OnlineClassPage,
   MyOnlineClassesPage,
@@ -29,6 +30,8 @@ import {
   MeetupCreatePage,
   ReportPage,
   BlockedPage,
+  PrivacyPage,
+  SupportPage,
   FeedCreatePage,
   ProfileEditPage,
   WorkoutHistoryPage,
@@ -47,8 +50,6 @@ import {
   CheckoutPage,
   AddOnsPage,
   CompletePage,
-  PurchaseDocsPage,
-  PurchaseListPage,
   GroupLessonDetailPage,
   BranchSelectPage,
   ReservationPage,
@@ -74,6 +75,7 @@ export const App = () => {
         <Route path="/mypage/edit" element={<ProfileEditPage />} />
         <Route path="/mypage/workout-history" element={<WorkoutHistoryPage />} />
         <Route path="/membership" element={<MembershipPage />} />
+        <Route path="/membership/:id" element={<MembershipDetailPage />} />
         <Route path="/lesson" element={<LessonPage />} />
         <Route path="/online-class" element={<OnlineClassPage />} />
         <Route path="/online-class/my" element={<MyOnlineClassesPage />} />
@@ -104,8 +106,6 @@ export const App = () => {
         <Route path="/chat/:id" element={<ChatRoomPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/complete" element={<CompletePage />} />
-        <Route path="/purchase" element={<PurchaseListPage />} />
-        <Route path="/purchase/docs" element={<PurchaseDocsPage />} />
         <Route path="/branch" element={<BranchSelectPage />} />
         <Route path="/reservation" element={<ReservationPage />} />
         <Route path="/workout" element={<WorkoutPage />} />
@@ -117,6 +117,8 @@ export const App = () => {
         <Route path="/event" element={<EventPage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/blocked" element={<BlockedPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/support" element={<SupportPage />} />
         <Route path="/profile/:name" element={<UserProfilePage />} />
         <Route path="/profile/:name/posts" element={<UserPostsPage />} />
         <Route path="/profile/:name/followers" element={<UserFollowersPage />} />

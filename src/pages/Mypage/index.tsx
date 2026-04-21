@@ -4,7 +4,6 @@ import { PageLayout, SubPageHeader, ProfileHeader } from '../../components'
 import {
   IconChevronRight,
   IconCalendarCheck,
-  IconClipboard,
   IconShield,
   IconMessage,
   IconInfo,
@@ -68,21 +67,6 @@ const memberships = [
     id: 6, status: 'expired', statusLabel: '사용완료', tab: '사용완료' as const,
     name: 'PT 10회 패키지', gym: '바디채널 강남점',
     info: [{ label: '완료일', value: '2024.11.15' }],
-  },
-]
-
-const purchaseHistory = [
-  {
-    id: 1, name: '헬스 이용권 · 월 구독권 + 개인 락커 + 운동복 대여', price: '129,000', gym: '바디채널 강남점',
-    method: '카카오페이', order: 'BC20260326999', date: '2026.03.26 17:38', status: '이용중',
-  },
-  {
-    id: 2, name: 'PT · 10회', price: '700,000', gym: '바디채널 강남점',
-    method: '신용/체크카드', order: 'BC20260320412', date: '2026.03.20 11:20', status: '이용중',
-  },
-  {
-    id: 3, name: '바레톤 · 1회 체험', price: '30,000', gym: '바디채널 강남점',
-    method: '네이버페이', order: 'BC20260315087', date: '2026.03.15 09:45', status: '사용완료',
   },
 ]
 
@@ -334,32 +318,52 @@ export const MyPage = () => {
 
             {/* 회원권 리스트 */}
             <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar">
-              {memberships.filter(m => m.tab === membershipTab).map((membership) => (
-                <div
-                  key={membership.id}
-                  className={`min-w-[240px] flex-shrink-0 rounded-card p-card-lg cursor-pointer transition-transform hover:-translate-y-0.5 ${statusStyles[membership.status]}`}
-                >
-                  <span className={`badge mb-2 inline-block ${statusBadgeStyles[membership.status]}`}>
-                    {membership.statusLabel}
-                  </span>
-                  <div className="text-body font-bold mb-0.5">{membership.name}</div>
-                  <div className={`text-caption mb-3 ${membership.status === 'active' ? 'opacity-60' : 'text-ink-placeholder'}`}>
-                    {membership.gym}
+              {memberships.filter(m => m.tab === membershipTab).map((membership) => {
+                const isDark = membership.status === 'active'
+                return (
+                  <div
+                    key={membership.id}
+                    onClick={() => navigate(`/membership/${membership.id}`)}
+                    className={`min-w-[240px] flex-shrink-0 rounded-card p-card-lg cursor-pointer transition-transform hover:-translate-y-0.5 flex flex-col ${statusStyles[membership.status]}`}
+                  >
+                    <span className={`self-start mb-2 px-1.5 py-px rounded text-[11px] font-extrabold ${statusBadgeStyles[membership.status]}`}>
+                      {membership.statusLabel}
+                    </span>
+                    <div className="text-body font-bold mb-0.5">{membership.name}</div>
+                    <div className={`text-caption mb-3 ${isDark ? 'opacity-60' : 'text-ink-placeholder'}`}>
+                      {membership.gym}
+                    </div>
+                    <div className="flex gap-4 mb-3">
+                      {membership.info.map((item) => (
+                        <div key={item.label} className="flex flex-col">
+                          <span className={`text-caption mb-0.5 ${isDark ? 'opacity-60' : 'text-ink-placeholder'}`}>
+                            {item.label}
+                          </span>
+                          <span className={`text-label font-bold ${membership.status === 'expired' ? 'text-ink-secondary' : ''}`}>
+                            {item.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/membership/${membership.id}`)
+                      }}
+                      className={`mt-auto flex items-center justify-center gap-1 py-2 rounded-pill text-caption font-bold transition-colors ${
+                        isDark
+                          ? 'bg-white/10 hover:bg-white/20 text-white'
+                          : 'bg-surface-muted hover:bg-border-light text-ink'
+                      }`}
+                    >
+                      자세히 보기
+                      <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </button>
                   </div>
-                  <div className="flex gap-4">
-                    {membership.info.map((item) => (
-                      <div key={item.label} className="flex flex-col">
-                        <span className={`text-caption mb-0.5 ${membership.status === 'active' ? 'opacity-60' : 'text-ink-placeholder'}`}>
-                          {item.label}
-                        </span>
-                        <span className={`text-label font-bold ${membership.status === 'expired' ? 'text-ink-secondary' : ''}`}>
-                          {item.value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
               {memberships.filter(m => m.tab === membershipTab).length === 0 && (
                 <div className="py-8 text-center text-label text-ink-placeholder">
                   해당하는 회원권이 없습니다
@@ -562,7 +566,6 @@ export const MyPage = () => {
           <div className="px-page py-section">
             <h3 className="text-body font-bold text-ink mb-1">내 정보</h3>
             {[
-              { icon: <IconClipboard className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '구매 내역', sub: `${purchaseHistory.length}건`, highlight: true, onClick: () => navigate('/purchase') },
               { icon: <IconShield className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '차단한 사용자', sub: '', highlight: false, onClick: () => navigate('/blocked') },
               { icon: <IconShield className="w-[20px] h-[20px] stroke-ink-secondary stroke-[1.5]" />, label: '개인정보 보호', sub: '', highlight: false, onClick: () => navigate('/privacy') },
             ].map((item, i) => (

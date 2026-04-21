@@ -66,7 +66,7 @@ export default {
       /* ── Spacing Tokens ── */
       spacing: {
         'page': '20px',       // page horizontal padding (px-page)
-        'section': '24px',    // gap between sections (mb-section)
+        'section': '20px',    // gap between sections (mb-section)
         'card': '12px',       // card internal padding (p-card)
         'card-lg': '16px',    // larger card padding
       },

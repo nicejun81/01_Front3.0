@@ -79,13 +79,13 @@ const categories: CategoryItem[] = [
 
 export const CategoryGrid = () => {
   return (
-    <div className="bg-surface rounded-card-lg shadow-card px-3 py-4 mb-section">
-      <div className="grid grid-cols-4 gap-y-2 gap-x-1">
+    <div className="bg-surface rounded-card-lg shadow-card px-3 py-3 mb-section">
+      <div className="grid grid-cols-4 gap-y-1 gap-x-1">
         {categories.map((category) => (
           <Link
             key={category.id}
             to={category.href}
-            className="flex flex-col items-center py-3 px-1 rounded-card hover:bg-surface-muted active:scale-95 transition-all"
+            className="flex flex-col items-center py-2.5 px-1 rounded-card hover:bg-surface-muted active:scale-95 transition-all"
           >
             <div
               className={`w-[52px] h-[52px] rounded-card-lg flex items-center justify-center mb-2 ${category.gradient}`}

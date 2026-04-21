@@ -152,6 +152,20 @@ const lookupProfile = (raw: string): Profile => {
   }
 }
 
+type BlockedUserStored = {
+  name: string
+  handle: string
+  avatarUrl: string
+  blockedAt: string
+  context?: string
+}
+
+const formatToday = () => {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}`
+}
+
 export const UserProfilePage = () => {
   const { name } = useParams()
   const navigate = useNavigate()
@@ -159,6 +173,31 @@ export const UserProfilePage = () => {
   const [following, setFollowing] = useState(false)
   const [tab, setTab] = useState<'grid' | 'tagged'>('grid')
   const [moreMenu, setMoreMenu] = useState(false)
+  const [blockConfirm, setBlockConfirm] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const doBlock = () => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('blockedUsers') || '[]')
+      const current: BlockedUserStored[] = Array.isArray(raw) && typeof raw[0] === 'object' ? raw : []
+      if (!current.some(u => u.name === profile.name)) {
+        current.unshift({
+          name: profile.name,
+          handle: `@${profile.name}`,
+          avatarUrl: profile.imageUrl,
+          blockedAt: formatToday(),
+          context: '프로필에서 차단',
+        })
+        localStorage.setItem('blockedUsers', JSON.stringify(current))
+      }
+    } catch { /* noop */ }
+    setBlockConfirm(false)
+    setToast(`${profile.name}님을 차단했어요`)
+    setTimeout(() => {
+      setToast(null)
+      navigate('/blocked')
+    }, 1200)
+  }
 
   return (
     <PageLayout header={<SubPageHeader title={profile.name} />} className="!px-0">
@@ -249,7 +288,7 @@ export const UserProfilePage = () => {
                   setMoreMenu(false)
                 }},
                 { label: '신고하기', icon: 'M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86L7.86 2zM12 8v4M12 16h.01', danger: true, action: () => { setMoreMenu(false); navigate('/report') } },
-                { label: '차단하기', icon: 'M18.36 5.64a9 9 0 11-12.73 0 9 9 0 0112.73 0zM5.64 5.64l12.73 12.73', danger: true, action: () => { setMoreMenu(false); navigate('/blocked') } },
+                { label: '차단하기', icon: 'M18.36 5.64a9 9 0 11-12.73 0 9 9 0 0112.73 0zM5.64 5.64l12.73 12.73', danger: true, action: () => { setMoreMenu(false); setBlockConfirm(true) } },
               ].map((item) => (
                 <button
                   key={item.label}
@@ -266,6 +305,56 @@ export const UserProfilePage = () => {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 차단 확인 모달 */}
+      {blockConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-page"
+          onClick={() => setBlockConfirm(false)}
+        >
+          <div
+            className="w-full max-w-[360px] bg-surface rounded-card-lg p-5 shadow-elevated animate-slide-up"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <img
+                src={profile.imageUrl}
+                alt={profile.name}
+                className="w-12 h-12 rounded-full object-cover bg-surface-muted flex-shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-title font-extrabold text-ink truncate">{profile.name}</div>
+                <div className="text-caption text-ink-placeholder truncate">@{profile.name}</div>
+              </div>
+            </div>
+            <p className="text-label text-ink-secondary leading-relaxed mb-4">
+              <span className="font-bold text-ink">{profile.name}</span>님을 차단하면
+              피드·댓글·메시지가 더 이상 보이지 않아요
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setBlockConfirm(false)}
+                className="flex-1 py-3 bg-surface-muted text-ink text-label font-bold rounded-card hover:bg-border-light transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={doBlock}
+                className="flex-1 py-3 bg-primary text-white text-label font-bold rounded-card hover:bg-primary-dark transition-colors"
+              >
+                차단하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 토스트 */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-3 bg-ink/95 text-white text-label font-semibold rounded-pill shadow-elevated animate-slide-up">
+          {toast}
         </div>
       )}
     </PageLayout>

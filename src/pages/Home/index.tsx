@@ -6,7 +6,7 @@ import {
   HeroSlider,
   CategoryGrid,
   QuickTabs,
-  RecentChat,
+  BrandScroll,
   SectionHeader,
   OnlineClassCard,
   TrainerListItem,
@@ -247,15 +247,7 @@ export const HomePage = () => {
       <HeroSlider />
       <CategoryGrid />
       <QuickTabs />
-
-      <RecentChat
-        avatarUrl="https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=100&h=100&fit=crop&crop=face"
-        name="김민수 트레이너"
-        message="내일 PT 수업 시간 변경 가능할까요?"
-        time="오후 2:30"
-        unreadCount={1}
-        onClick={() => navigate('/chat/1')}
-      />
+      <BrandScroll />
 
       {/* Online Class */}
       <section className="section">

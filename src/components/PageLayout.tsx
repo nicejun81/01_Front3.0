@@ -19,7 +19,7 @@ export const PageLayout = ({
   return (
     <div className="min-h-screen bg-surface">
       {header}
-      <main className={`${noPadding ? 'pb-28' : 'px-page py-4 pb-28'} ${className}`}>
+      <main className={`${noPadding ? 'pb-28' : 'px-page pt-3 pb-28'} ${className}`}>
         {children}
       </main>
       {!hideBottomNav && <BottomNav />}
