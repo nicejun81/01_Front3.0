@@ -147,7 +147,7 @@ export const ShopPage = () => {
       title="쇼핑몰"
       right={
         <div className="flex items-center gap-1">
-          <button className="icon-btn">
+          <button className="icon-btn" onClick={() => navigate('/branch')} aria-label="지점 검색">
             <IconSearch className="w-[22px] h-[22px] stroke-ink stroke-2" />
           </button>
           <button className="icon-btn relative">

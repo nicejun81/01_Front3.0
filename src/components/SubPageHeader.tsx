@@ -20,7 +20,7 @@ export const ChatButton = () => {
 }
 
 interface SubPageHeaderProps {
-  title: string
+  title: ReactNode
   onBack?: () => void
   right?: ReactNode
   showChat?: boolean

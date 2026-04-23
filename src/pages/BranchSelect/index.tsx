@@ -148,7 +148,7 @@ export const BranchSelectPage = () => {
             return (
               <button
                 key={branch.id}
-                onClick={() => { localStorage.setItem('selectedBranch', gym.name); navigate('/') }}
+                onClick={() => { localStorage.setItem('selectedBranch', gym.name); window.dispatchEvent(new Event('branch-changed')); navigate(-1) }}
                 className="w-full flex items-center gap-3 py-4 border-b border-border-light last:border-0 hover:bg-surface-subtle transition-colors text-left"
               >
                 <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0 fill-none stroke-[1.5] stroke-ink-tertiary">
@@ -197,7 +197,7 @@ export const BranchSelectPage = () => {
             return (
               <div className="absolute bottom-4 left-4 right-4 z-[1000]">
                 <button
-                  onClick={() => { localStorage.setItem('selectedBranch', gym.name); navigate('/') }}
+                  onClick={() => { localStorage.setItem('selectedBranch', gym.name); window.dispatchEvent(new Event('branch-changed')); navigate(-1) }}
                   className="w-full flex items-center gap-3 p-card-lg bg-surface rounded-card shadow-elevated text-left"
                 >
                   <svg viewBox="0 0 24 24" className="w-5 h-5 flex-shrink-0 fill-none stroke-[1.5] stroke-primary">

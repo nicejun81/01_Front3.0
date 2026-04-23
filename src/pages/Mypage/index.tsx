@@ -7,7 +7,6 @@ import {
   IconShield,
   IconMessage,
   IconInfo,
-  IconSettings,
   IconUser,
   IconUserPlus,
   IconStar,
@@ -152,11 +151,6 @@ export const MyPage = () => {
     <SubPageHeader
       title="마이페이지"
       showChat
-      right={
-        <button className="icon-btn">
-          <IconSettings className="w-5 h-5 stroke-ink stroke-[1.5]" />
-        </button>
-      }
     >
       <div className="flex">
         {([{ key: 'my', label: '마이' }, { key: 'profile', label: '프로필' }] as const).map((tab) => (
@@ -601,7 +595,7 @@ export const MyPage = () => {
             ))}
           </div>
 
-          <div className="px-page pb-8">
+          <div className="px-page">
             <button
               onClick={() => window.location.href = '/login'}
               className="w-full py-3 text-label text-ink-placeholder hover:text-ink-secondary transition-colors"

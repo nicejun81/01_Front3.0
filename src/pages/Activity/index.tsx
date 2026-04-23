@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, memo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { PageLayout, SubPageHeader, FilterTabs } from '../../components'
-import { IconSearch, IconHeart, IconMessage, IconCalendar, IconMapPin, IconShare } from '../../components/Icons'
+import { IconHeart, IconMessage, IconCalendar, IconMapPin, IconShare } from '../../components/Icons'
 
 const Stat = memo(({ label, value, unit, divider }: { label: string; value: string; unit?: string; divider?: boolean }) => (
   <div className={`flex flex-col items-center justify-center text-center ${divider ? 'border-x border-white/10 px-3' : ''}`}>
@@ -461,7 +461,6 @@ export const ActivityPage = () => {
   const [imageIdxMap, setImageIdxMap] = useState<Record<number, number>>({})
   const [expandedWorkout, setExpandedWorkout] = useState<number | null>(null)
   const [feedTypeModal, setFeedTypeModal] = useState(false)
-  const [showCalendar, setShowCalendar] = useState(false)
   const [commentsMap, setCommentsMap] = useState<Record<number, { author: string; text: string }[]>>({
     1: [
       { author: '박지영', text: '대단해요! 저도 열심히 해야겠어요 👏' },
@@ -507,16 +506,7 @@ export const ActivityPage = () => {
   const header = (
     <SubPageHeader
       title="피드"
-      right={
-        <div className="flex items-center gap-1">
-          <button className="icon-btn" onClick={() => setShowCalendar(true)}>
-            <IconCalendar className="w-5 h-5 stroke-ink stroke-2 fill-none" />
-          </button>
-          <button className="icon-btn">
-            <IconSearch className="w-5 h-5 stroke-ink stroke-2 fill-none" />
-          </button>
-        </div>
-      }
+      showChat
     >
       <div className="flex">
         {(['feed', 'meetup'] as const).map((tab) => (
@@ -1024,144 +1014,6 @@ export const ActivityPage = () => {
           </div>
         </div>
       )}
-      {/* Workout Calendar */}
-      {showCalendar && (() => {
-        const now = new Date()
-        const year = now.getFullYear()
-        const month = now.getMonth()
-        const firstDay = new Date(year, month, 1).getDay()
-        const daysInMonth = new Date(year, month + 1, 0).getDate()
-        const today = now.getDate()
-        // mock: 운동한 날짜 (이번 달)
-        const workoutDays = new Set([1, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 21, 22, 24, 26, 28])
-        const workoutDetails: Record<number, { exercises: number; duration: string; volume: string }> = {
-          1: { exercises: 5, duration: '1시간 20분', volume: '8,420kg' },
-          3: { exercises: 4, duration: '55분', volume: '맨몸' },
-          5: { exercises: 6, duration: '1시간 45분', volume: '12,680kg' },
-          7: { exercises: 5, duration: '50분', volume: '3,240kg' },
-          8: { exercises: 3, duration: '40분', volume: '맨몸' },
-          10: { exercises: 5, duration: '1시간 10분', volume: '7,200kg' },
-          12: { exercises: 4, duration: '1시간', volume: '5,600kg' },
-          14: { exercises: 6, duration: '1시간 30분', volume: '10,400kg' },
-          15: { exercises: 3, duration: '45분', volume: '맨몸' },
-          17: { exercises: 5, duration: '1시간 15분', volume: '9,100kg' },
-          19: { exercises: 4, duration: '55분', volume: '4,800kg' },
-          21: { exercises: 5, duration: '1시간 20분', volume: '8,200kg' },
-          22: { exercises: 3, duration: '40분', volume: '맨몸' },
-          24: { exercises: 6, duration: '1시간 40분', volume: '11,600kg' },
-          26: { exercises: 4, duration: '1시간', volume: '6,400kg' },
-          28: { exercises: 5, duration: '1시간 10분', volume: '7,800kg' },
-        }
-        const weekdays = ['일', '월', '화', '수', '목', '금', '토']
-        const cells: (number | null)[] = Array(firstDay).fill(null)
-        for (let d = 1; d <= daysInMonth; d++) cells.push(d)
-        while (cells.length % 7 !== 0) cells.push(null)
-        const totalWorkouts = workoutDays.size
-        const streak = (() => { let s = 0; for (let d = today; d >= 1; d--) { if (workoutDays.has(d)) s++; else break } return s })()
-
-        return (
-          <div className="fixed inset-0 z-[100] flex items-end justify-center">
-            <div className="absolute inset-0 bg-black/50" onClick={() => setShowCalendar(false)} />
-            <div className="relative w-full max-w-screen-sm max-h-[85vh] bg-surface rounded-t-3xl animate-slide-up overflow-y-auto">
-              <div className="sticky top-0 bg-surface z-10 px-page pt-4 pb-2">
-                <div className="flex justify-center mb-3">
-                  <span className="w-10 h-1 rounded-full bg-ink-disabled" />
-                </div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-heading font-bold text-ink">
-                    {year}년 {month + 1}월
-                  </div>
-                  <button onClick={() => setShowCalendar(false)} className="w-8 h-8 rounded-full bg-surface-muted flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-ink stroke-2 fill-none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
-                {/* Summary */}
-                <div className="grid grid-cols-3 gap-2 p-3 bg-primary-50 rounded-card-lg mb-4">
-                  <div className="text-center">
-                    <div className="text-title font-extrabold text-primary tabular-nums">{totalWorkouts}</div>
-                    <div className="text-caption text-ink-tertiary">이번 달 운동</div>
-                  </div>
-                  <div className="text-center border-x border-primary/20">
-                    <div className="text-title font-extrabold text-primary tabular-nums">{streak}</div>
-                    <div className="text-caption text-ink-tertiary">연속 일수</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-title font-extrabold text-primary tabular-nums">{Math.round(totalWorkouts / today * 100)}%</div>
-                    <div className="text-caption text-ink-tertiary">출석률</div>
-                  </div>
-                </div>
-                {/* Weekday headers */}
-                <div className="grid grid-cols-7 gap-1 mb-1">
-                  {weekdays.map(w => (
-                    <div key={w} className={`text-center text-caption font-semibold ${w === '일' ? 'text-semantic-like' : w === '토' ? 'text-accent-purple' : 'text-ink-tertiary'}`}>
-                      {w}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="px-page pb-6">
-                {/* Calendar grid */}
-                <div className="grid grid-cols-7 gap-1">
-                  {cells.map((day, i) => {
-                    if (!day) return <div key={i} />
-                    const isToday = day === today
-                    const worked = workoutDays.has(day)
-                    const isFuture = day > today
-                    const dayOfWeek = new Date(year, month, day).getDay()
-                    return (
-                      <div
-                        key={i}
-                        className={`relative flex flex-col items-center justify-center py-2 rounded-card ${
-                          isToday ? 'bg-primary text-white' : worked ? 'bg-primary-50' : ''
-                        }`}
-                      >
-                        <span className={`text-label font-semibold tabular-nums ${
-                          isToday ? 'text-white' :
-                          isFuture ? 'text-ink-disabled' :
-                          dayOfWeek === 0 ? 'text-semantic-like' :
-                          dayOfWeek === 6 ? 'text-accent-purple' :
-                          'text-ink'
-                        }`}>{day}</span>
-                        {worked && !isToday && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary mt-0.5" />
-                        )}
-                        {worked && isToday && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-white mt-0.5" />
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-                {/* Today's detail or recent */}
-                <div className="mt-5">
-                  <div className="text-label font-bold text-ink mb-2">최근 운동기록</div>
-                  <div className="flex flex-col gap-2">
-                    {[...workoutDays].filter(d => d <= today).sort((a, b) => b - a).slice(0, 5).map(d => {
-                      const detail = workoutDetails[d]
-                      if (!detail) return null
-                      return (
-                        <div key={d} className="flex items-center justify-between p-3 bg-surface-muted rounded-card">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${d === today ? 'bg-primary text-white' : 'bg-primary-50 text-primary'}`}>
-                              <span className="text-label font-bold tabular-nums">{d}</span>
-                            </div>
-                            <div>
-                              <div className="text-body font-semibold text-ink">{detail.exercises}종목 · {detail.duration}</div>
-                              <div className="text-caption text-ink-tertiary">{detail.volume}</div>
-                            </div>
-                          </div>
-                          <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-ink-tertiary stroke-2 fill-none shrink-0"><path d="m9 18 6-6-6-6"/></svg>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
-
       {/* Feed Type Selection */}
       {feedTypeModal && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">

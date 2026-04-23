@@ -31,7 +31,16 @@ import {
   ReportPage,
   BlockedPage,
   PrivacyPage,
+  PrivacyPolicyPage,
   SupportPage,
+  TermsPage,
+  AboutPage,
+  LoginPage,
+  FindPasswordPage,
+  SignupPage,
+  SignupCompletePage,
+  BrandsPage,
+  BrandDetailPage,
   FeedCreatePage,
   ProfileEditPage,
   WorkoutHistoryPage,
@@ -118,7 +127,16 @@ export const App = () => {
         <Route path="/report" element={<ReportPage />} />
         <Route path="/blocked" element={<BlockedPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/support" element={<SupportPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/find-password" element={<FindPasswordPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/signup/complete" element={<SignupCompletePage />} />
+        <Route path="/brands" element={<BrandsPage />} />
+        <Route path="/brands/:id" element={<BrandDetailPage />} />
         <Route path="/profile/:name" element={<UserProfilePage />} />
         <Route path="/profile/:name/posts" element={<UserPostsPage />} />
         <Route path="/profile/:name/followers" element={<UserFollowersPage />} />

@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { PageLayout, SubPageHeader, FilterTabs } from '../../components'
-import { IconSearch, IconChevronRight, IconX, IconClock } from '../../components/Icons'
+import { IconSearch, IconX, IconClock } from '../../components/Icons'
 
 type Category = '전체' | '결제·환불' | '예약·이용' | '회원권' | '앱 사용' | '이벤트'
 const CATEGORIES: Category[] = ['전체', '결제·환불', '예약·이용', '회원권', '앱 사용', '이벤트']
@@ -283,23 +283,6 @@ export const SupportPage = () => {
             ))}
           </div>
         )}
-      </div>
-
-      {/* 기타 링크 */}
-      <div className="px-page">
-        <div className="bg-surface-muted rounded-card-lg p-4">
-          <h4 className="text-label font-extrabold text-ink mb-1.5 tracking-wider">더 알아보기</h4>
-          <ul className="flex flex-col">
-            {['공지사항', '이용약관', '개인정보 처리방침'].map(l => (
-              <li key={l}>
-                <button className="w-full flex items-center justify-between py-2 text-left hover:underline">
-                  <span className="text-label text-ink-secondary">{l}</span>
-                  <IconChevronRight className="w-3.5 h-3.5 stroke-ink-placeholder stroke-[1.5]" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
 
       {/* 1:1 문의 등록 모달 */}

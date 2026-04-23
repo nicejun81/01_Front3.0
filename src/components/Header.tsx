@@ -17,7 +17,8 @@ export const Header = () => {
     const onFocus = () => setBranchName(localStorage.getItem('selectedBranch') || '바디채널 강남점')
     window.addEventListener('focus', onFocus)
     window.addEventListener('popstate', onFocus)
-    return () => { window.removeEventListener('storage', onStorage); window.removeEventListener('focus', onFocus); window.removeEventListener('popstate', onFocus) }
+    window.addEventListener('branch-changed', onFocus)
+    return () => { window.removeEventListener('storage', onStorage); window.removeEventListener('focus', onFocus); window.removeEventListener('popstate', onFocus); window.removeEventListener('branch-changed', onFocus) }
   }, [])
 
   return (

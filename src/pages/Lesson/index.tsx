@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageLayout, SubPageHeader, TrainerListItem, PTTrainerCard, FilterTabs, EmptyState } from '../../components'
-import { IconSearch } from '../../components/Icons'
 const instructorLessonMap: Record<string, string> = {
   // PT 강사 → PT 레슨
   '최강민': 'pt-kangmin',
@@ -441,18 +440,35 @@ export const LessonPage = () => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('pt')
   const [selectedDateIdx, setSelectedDateIdx] = useState(0)
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(() => localStorage.getItem('selectedBranch'))
   const scheduleDays = getLessonScheduleDays()
   const selectedDay = scheduleDays[selectedDateIdx].dayKey
 
+  useEffect(() => {
+    const sync = () => setSelectedBranch(localStorage.getItem('selectedBranch'))
+    window.addEventListener('branch-changed', sync)
+    window.addEventListener('focus', sync)
+    return () => {
+      window.removeEventListener('branch-changed', sync)
+      window.removeEventListener('focus', sync)
+    }
+  }, [])
+
   const header = (
     <SubPageHeader
-      title="레슨권"
-      showChat
-      right={
-        <button className="icon-btn">
-          <IconSearch className="w-[22px] h-[22px] stroke-ink stroke-2" />
+      title={
+        <button
+          onClick={() => navigate('/branch')}
+          className="inline-flex items-center gap-1.5 active:opacity-70 transition-opacity"
+          aria-label="지점 변경"
+        >
+          <span className="text-title font-bold text-ink">{selectedBranch ?? '지점 선택'}</span>
+          <svg viewBox="0 0 20 20" className="w-4 h-4 fill-ink/50 mt-px">
+            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+          </svg>
         </button>
       }
+      showChat
     >
       <FilterTabs
         tabs={filterTabs.map(t => ({ key: t.id, label: t.label }))}

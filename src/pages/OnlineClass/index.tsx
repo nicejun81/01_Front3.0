@@ -56,7 +56,7 @@ export const OnlineClassPage = () => {
     <SubPageHeader
       title="온라인 강의"
       right={
-        <button className="icon-btn">
+        <button className="icon-btn" onClick={() => navigate('/branch')} aria-label="지점 검색">
           <IconSearch className="w-[22px] h-[22px] stroke-ink stroke-2" />
         </button>
       }

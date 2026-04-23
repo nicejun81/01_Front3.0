@@ -1,37 +1,23 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { PageLayout, SubPageHeader } from '../../components'
-import { IconChevronRight, IconLock, IconUser, IconBell, IconShield } from '../../components/Icons'
-
-type Visibility = 'public' | 'followers' | 'private'
+import { IconChevronRight, IconLock, IconUser, IconShield, IconX, IconEye, IconEyeOff } from '../../components/Icons'
 
 const STORAGE_KEY = 'privacySettings'
 
 type PrivacyState = {
-  visibility: Visibility
-  activeStatus: boolean
-  readReceipt: boolean
-  searchable: boolean
   allowDM: boolean
-  allowMention: boolean
   allowComment: boolean
   adPersonalization: boolean
   locationTracking: boolean
-  analytics: boolean
   marketing: boolean
 }
 
 const DEFAULT_STATE: PrivacyState = {
-  visibility: 'public',
-  activeStatus: true,
-  readReceipt: true,
-  searchable: true,
   allowDM: true,
-  allowMention: true,
   allowComment: true,
   adPersonalization: true,
   locationTracking: false,
-  analytics: true,
   marketing: false,
 }
 
@@ -83,13 +69,6 @@ const ToggleRow = memo(({ label, description, checked, onToggle }: RowProps) => 
 ))
 ToggleRow.displayName = 'ToggleRow'
 
-// ─── 공개 범위 라디오 ─────────────────────────────────
-const VISIBILITY_OPTIONS: { value: Visibility; label: string; description: string }[] = [
-  { value: 'public', label: '전체 공개', description: '누구나 내 프로필과 피드를 볼 수 있어요' },
-  { value: 'followers', label: '팔로워만', description: '나를 팔로우한 사용자만 볼 수 있어요' },
-  { value: 'private', label: '비공개', description: '나와 내가 승인한 사용자만 볼 수 있어요' },
-]
-
 // ─── 섹션 헤더 ───────────────────────────────────────
 const SectionHeader = ({ icon, title }: { icon: React.ReactNode; title: string }) => (
   <div className="flex items-center gap-2 px-page pt-6 pb-2">
@@ -122,6 +101,15 @@ export const PrivacyPage = () => {
   const navigate = useNavigate()
   const [state, setState] = useState<PrivacyState>(load)
   const [toast, setToast] = useState<string | null>(null)
+  const [pwOpen, setPwOpen] = useState(false)
+  const [pwCurrent, setPwCurrent] = useState('')
+  const [pwNew, setPwNew] = useState('')
+  const [pwConfirm, setPwConfirm] = useState('')
+  const [showCurrent, setShowCurrent] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteAck, setDeleteAck] = useState(false)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
@@ -137,16 +125,57 @@ export const PrivacyPage = () => {
     setState(prev => ({ ...prev, [key]: !prev[key] }))
   }, [])
 
-  const setVisibility = useCallback((v: Visibility) => {
-    setState(prev => ({ ...prev, visibility: v }))
-    setToast('프로필 공개 범위가 변경됐어요')
+  const openDeleteModal = useCallback(() => {
+    setDeleteAck(false)
+    setDeleteOpen(true)
   }, [])
 
-  const handleDelete = () => {
-    if (window.confirm('정말 계정을 탈퇴하시겠어요?\n모든 데이터가 영구 삭제됩니다.')) {
-      setToast('탈퇴 신청이 접수됐어요')
+  const closeDeleteModal = useCallback(() => {
+    setDeleteOpen(false)
+    setDeleteAck(false)
+  }, [])
+
+  const confirmDelete = useCallback(() => {
+    if (!deleteAck) return
+    localStorage.clear()
+    setDeleteOpen(false)
+    setDeleteAck(false)
+    setToast('탈퇴가 완료됐어요. 그동안 이용해 주셔서 감사해요')
+    setTimeout(() => navigate('/login', { replace: true }), 1400)
+  }, [deleteAck, navigate])
+
+  const openPasswordModal = useCallback(() => setPwOpen(true), [])
+
+  const closePasswordModal = useCallback(() => {
+    setPwOpen(false)
+    setPwCurrent('')
+    setPwNew('')
+    setPwConfirm('')
+    setShowCurrent(false)
+    setShowNew(false)
+    setShowConfirm(false)
+  }, [])
+
+  const submitPassword = useCallback(() => {
+    if (!pwCurrent) {
+      setToast('현재 비밀번호를 입력해 주세요')
+      return
     }
-  }
+    if (pwNew.length < 8) {
+      setToast('새 비밀번호는 8자 이상이어야 해요')
+      return
+    }
+    if (pwNew === pwCurrent) {
+      setToast('현재 비밀번호와 다르게 설정해 주세요')
+      return
+    }
+    if (pwNew !== pwConfirm) {
+      setToast('새 비밀번호가 일치하지 않아요')
+      return
+    }
+    closePasswordModal()
+    setToast('비밀번호가 변경됐어요')
+  }, [pwCurrent, pwNew, pwConfirm, closePasswordModal])
 
   return (
     <PageLayout
@@ -171,62 +200,6 @@ export const PrivacyPage = () => {
         </div>
       </div>
 
-      {/* 프로필 공개 범위 */}
-      <SectionHeader icon={<IconUser className="w-4 h-4 stroke-[1.5]" />} title="프로필 공개" />
-      <div className="px-page">
-        <div className="flex flex-col gap-2">
-          {VISIBILITY_OPTIONS.map(opt => {
-            const active = state.visibility === opt.value
-            return (
-              <button
-                key={opt.value}
-                onClick={() => setVisibility(opt.value)}
-                className={`flex items-center gap-3 p-4 rounded-card-lg border text-left transition-colors ${
-                  active
-                    ? 'border-primary bg-primary-50'
-                    : 'border-border hover:border-ink-placeholder'
-                }`}
-              >
-                <span
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                    active ? 'border-primary' : 'border-border'
-                  }`}
-                >
-                  {active && <span className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className={`text-body font-bold ${active ? 'text-primary-dark' : 'text-ink'}`}>{opt.label}</div>
-                  <p className="text-caption text-ink-tertiary mt-0.5 leading-relaxed">{opt.description}</p>
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* 활동 */}
-      <SectionHeader icon={<IconBell className="w-4 h-4 stroke-[1.5]" />} title="활동 정보" />
-      <div className="px-page">
-        <ToggleRow
-          label="활동 상태 표시"
-          description="나의 온라인/오프라인 상태를 다른 사용자에게 표시"
-          checked={state.activeStatus}
-          onToggle={toggle('activeStatus')}
-        />
-        <ToggleRow
-          label="메시지 읽음 표시"
-          description="상대방에게 메시지 읽음 여부를 알려줘요"
-          checked={state.readReceipt}
-          onToggle={toggle('readReceipt')}
-        />
-        <ToggleRow
-          label="검색에 내 프로필 노출"
-          description="이름·아이디로 검색할 때 프로필이 노출돼요"
-          checked={state.searchable}
-          onToggle={toggle('searchable')}
-        />
-      </div>
-
       {/* 상호작용 */}
       <SectionHeader icon={<IconShield className="w-4 h-4 stroke-[1.5]" />} title="상호작용" />
       <div className="px-page">
@@ -235,12 +208,6 @@ export const PrivacyPage = () => {
           description="팔로우하지 않은 사용자에게도 메시지를 받아요"
           checked={state.allowDM}
           onToggle={toggle('allowDM')}
-        />
-        <ToggleRow
-          label="언급·태그 허용"
-          description="다른 사용자가 나를 피드/댓글에서 언급할 수 있어요"
-          checked={state.allowMention}
-          onToggle={toggle('allowMention')}
         />
         <ToggleRow
           label="댓글 허용"
@@ -266,12 +233,6 @@ export const PrivacyPage = () => {
           onToggle={toggle('locationTracking')}
         />
         <ToggleRow
-          label="서비스 개선 통계 수집"
-          description="익명화된 사용 데이터로 서비스를 개선해요"
-          checked={state.analytics}
-          onToggle={toggle('analytics')}
-        />
-        <ToggleRow
           label="마케팅 정보 수신"
           description="이벤트·혜택 알림을 이메일/푸시로 받아요"
           checked={state.marketing}
@@ -285,39 +246,190 @@ export const PrivacyPage = () => {
         <LinkRow
           label="비밀번호 변경"
           description="마지막 변경: 2026.01.12"
-          onClick={() => navigate('/mypage/edit')}
-        />
-        <LinkRow
-          label="내 데이터 다운로드"
-          description="피드·메시지 등 내 활동 데이터 내보내기"
+          onClick={openPasswordModal}
         />
         <LinkRow
           label="계정 탈퇴"
           description="계정 및 모든 데이터를 영구 삭제해요"
-          onClick={handleDelete}
+          onClick={openDeleteModal}
         />
       </div>
 
-      {/* 정책 */}
-      <div className="px-page py-5 mt-2">
-        <div className="bg-surface-muted rounded-card-lg p-4">
-          <h4 className="text-label font-extrabold text-ink mb-2 tracking-wider">관련 정책</h4>
-          <div className="flex flex-col">
-            <button className="flex items-center justify-between py-2 text-left hover:underline">
-              <span className="text-label text-ink-secondary">개인정보 처리방침</span>
-              <IconChevronRight className="w-3.5 h-3.5 stroke-ink-placeholder stroke-[1.5]" />
-            </button>
-            <button className="flex items-center justify-between py-2 text-left hover:underline">
-              <span className="text-label text-ink-secondary">서비스 이용약관</span>
-              <IconChevronRight className="w-3.5 h-3.5 stroke-ink-placeholder stroke-[1.5]" />
-            </button>
-            <button className="flex items-center justify-between py-2 text-left hover:underline">
-              <span className="text-label text-ink-secondary">위치기반 서비스 이용약관</span>
-              <IconChevronRight className="w-3.5 h-3.5 stroke-ink-placeholder stroke-[1.5]" />
-            </button>
+      {/* 비밀번호 변경 모달 */}
+      {pwOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+          onClick={closePasswordModal}
+        >
+          <div
+            className="w-full max-w-[480px] bg-surface rounded-t-card-lg pt-3 pb-5 animate-slide-up max-h-[90vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+            <div className="px-page">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-title font-extrabold text-ink">비밀번호 변경</h3>
+                <button
+                  onClick={closePasswordModal}
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-muted transition-colors"
+                  aria-label="닫기"
+                >
+                  <IconX className="w-4 h-4 stroke-ink stroke-2" />
+                </button>
+              </div>
+              <p className="text-caption text-ink-tertiary mb-4">
+                안전을 위해 영문·숫자·특수문자를 포함한 8자 이상을 권장해요
+              </p>
+
+              {/* 현재 비밀번호 */}
+              <label className="block text-caption font-bold text-ink-secondary mb-1.5">현재 비밀번호</label>
+              <div className="relative mb-4">
+                <input
+                  type={showCurrent ? 'text' : 'password'}
+                  value={pwCurrent}
+                  onChange={e => setPwCurrent(e.target.value)}
+                  placeholder="현재 비밀번호"
+                  autoComplete="current-password"
+                  className="w-full px-3.5 py-2.5 pr-10 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrent(v => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-tertiary hover:text-ink transition-colors"
+                  aria-label={showCurrent ? '비밀번호 숨기기' : '비밀번호 보기'}
+                >
+                  {showCurrent
+                    ? <IconEyeOff className="w-4 h-4 stroke-current stroke-[1.8]" />
+                    : <IconEye className="w-4 h-4 stroke-current stroke-[1.8]" />}
+                </button>
+              </div>
+
+              {/* 새 비밀번호 */}
+              <label className="block text-caption font-bold text-ink-secondary mb-1.5">새 비밀번호</label>
+              <div className="relative mb-4">
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  value={pwNew}
+                  onChange={e => setPwNew(e.target.value)}
+                  placeholder="새 비밀번호 (8자 이상)"
+                  autoComplete="new-password"
+                  className="w-full px-3.5 py-2.5 pr-10 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder outline-none focus:ring-2 focus:ring-primary/40"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(v => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-tertiary hover:text-ink transition-colors"
+                  aria-label={showNew ? '비밀번호 숨기기' : '비밀번호 보기'}
+                >
+                  {showNew
+                    ? <IconEyeOff className="w-4 h-4 stroke-current stroke-[1.8]" />
+                    : <IconEye className="w-4 h-4 stroke-current stroke-[1.8]" />}
+                </button>
+              </div>
+
+              {/* 새 비밀번호 확인 */}
+              <label className="block text-caption font-bold text-ink-secondary mb-1.5">새 비밀번호 확인</label>
+              <div className="relative mb-5">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  value={pwConfirm}
+                  onChange={e => setPwConfirm(e.target.value)}
+                  placeholder="새 비밀번호 다시 입력"
+                  autoComplete="new-password"
+                  className={`w-full px-3.5 py-2.5 pr-10 bg-surface-muted rounded-card text-label text-ink placeholder:text-ink-placeholder outline-none focus:ring-2 ${
+                    pwConfirm && pwConfirm !== pwNew
+                      ? 'ring-2 ring-semantic-like/60'
+                      : 'focus:ring-primary/40'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(v => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-ink-tertiary hover:text-ink transition-colors"
+                  aria-label={showConfirm ? '비밀번호 숨기기' : '비밀번호 보기'}
+                >
+                  {showConfirm
+                    ? <IconEyeOff className="w-4 h-4 stroke-current stroke-[1.8]" />
+                    : <IconEye className="w-4 h-4 stroke-current stroke-[1.8]" />}
+                </button>
+              </div>
+
+              <button
+                onClick={submitPassword}
+                className="w-full py-3 bg-primary text-white text-body font-extrabold rounded-card hover:bg-primary-dark active:scale-[0.99] transition-all"
+              >
+                비밀번호 변경
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* 계정 탈퇴 확인 모달 */}
+      {deleteOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
+          onClick={closeDeleteModal}
+        >
+          <div
+            className="w-full max-w-[480px] bg-surface rounded-t-card-lg pt-3 pb-5 animate-slide-up"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+            <div className="px-page">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-title font-extrabold text-ink">정말 탈퇴하시겠어요?</h3>
+                <button
+                  onClick={closeDeleteModal}
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-muted transition-colors"
+                  aria-label="닫기"
+                >
+                  <IconX className="w-4 h-4 stroke-ink stroke-2" />
+                </button>
+              </div>
+              <p className="text-caption text-ink-tertiary mb-4">
+                탈퇴하면 계정과 모든 데이터가 영구 삭제되며 복구할 수 없어요
+              </p>
+
+              <div className="bg-primary-50 border border-primary/30 rounded-card p-3.5 mb-4">
+                <ul className="space-y-1.5 text-caption text-ink-secondary leading-relaxed">
+                  <li>• 프로필·피드·메시지 등 모든 활동 기록이 삭제돼요</li>
+                  <li>• 보유한 쿠폰·포인트·잔여 이용권이 함께 소멸돼요</li>
+                  <li>• 동일 이메일로는 30일간 재가입할 수 없어요</li>
+                </ul>
+              </div>
+
+              <label className="flex items-start gap-2.5 mb-5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={deleteAck}
+                  onChange={e => setDeleteAck(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-primary flex-shrink-0"
+                />
+                <span className="text-label text-ink-secondary leading-relaxed">
+                  위 내용을 모두 확인했으며, 탈퇴에 동의합니다
+                </span>
+              </label>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={closeDeleteModal}
+                  className="flex-1 py-3 bg-surface-muted text-ink text-body font-extrabold rounded-card hover:bg-border-light active:scale-[0.99] transition-all"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={!deleteAck}
+                  className="flex-1 py-3 bg-primary text-white text-body font-extrabold rounded-card hover:bg-primary-dark active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  탈퇴하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 토스트 */}
       {toast && (
